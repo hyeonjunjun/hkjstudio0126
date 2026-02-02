@@ -1,61 +1,60 @@
+"use client";
+
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 import Header from "@/components/Header";
-import About from "@/components/About";
-import Projects from "@/components/Projects";
-import Contact from "@/components/Contact";
-import GrainOverlay from "@/components/GrainOverlay";
+import HeroSection from "@/components/HeroSection";
+import ArchiveGrid from "@/components/ArchiveGrid";
+import StickyFooter from "@/components/StickyFooter";
+import Preloader from "@/components/Preloader";
+import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+
   return (
-    <div className="min-h-screen bg-[#FAFAF9] text-[#292524] font-serif selection:bg-[#E7E5E4]">
+    <div className="min-h-screen bg-[#050505] text-[#EDEDED] font-mono selection:bg-[#EDEDED] selection:text-[#050505]">
       <CustomCursor />
-      <GrainOverlay />
 
-      {/* Minimal Header (Clean, Sticky) */}
-      <Header />
+      {/* PRELOADER */}
+      <AnimatePresence mode="wait">
+        {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
+      </AnimatePresence>
 
-      <main className="relative z-10 w-full max-w-2xl mx-auto px-6 pt-32 pb-40 flex flex-col gap-24">
-
-        {/* FEED ITEM 1: HERO / INTRO */}
-        <section className="flex flex-col gap-6 animate-fade-in">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#A8A29E] uppercase tracking-widest">
-            <span className="w-2 h-2 rounded-full bg-[#EA580C]"></span>
-            <span>My Mind · Now</span>
+      {!isLoading && (
+        <SmoothScroll>
+          {/* GRID LINES BACKGROUND */}
+          <div className="fixed inset-0 w-full h-full pointer-events-none z-0 max-w-[1920px] mx-auto border-x border-[#262626] opacity-30">
+            <div className="grid grid-cols-12 h-full">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className={`border-r border-[#262626] h-full ${i === 11 ? "border-r-0" : ""}`} />
+              ))}
+            </div>
           </div>
 
-          <h1 className="text-3xl md:text-4xl leading-tight font-serif italic text-[#44403C]">
-            "I believe digital spaces should feel like <span className="text-[#292524] not-italic font-medium border-b border-[#E7E5E4] pb-1">warm homes</span>, not cold machines."
-          </h1>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+          >
+            <Header />
 
-          <p className="text-sm font-sans text-[#78716C] leading-relaxed max-w-md">
-            Hyeonjun Jun. Creative Developer based in Seoul. <br />
-            Curating pixels with sentiment and intention.
-          </p>
-        </section>
+            {/* CANVAS WRAPPER (z-10) */}
+            <main className="relative z-10 w-full flex flex-col bg-[#050505] mb-[100vh]">
+              <HeroSection />
 
-        {/* FEED ITEM 2: SELECTED WORKS (Formatted as Instagram Posts) */}
-        <section className="flex flex-col gap-12">
-          <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-4">
-            <span className="text-xs font-mono text-[#A8A29E] uppercase tracking-widest">Collection</span>
-            <span className="text-xs font-mono text-[#A8A29E]">2024 — 2026</span>
-          </div>
+              <div id="archive" className="">
+                <ArchiveGrid />
+              </div>
+            </main>
 
-          {/* Project List (Feed Style) */}
-          <Projects />
-        </section>
+            {/* REVEAL FOOTER (z-0) */}
+            <StickyFooter />
 
-        {/* FEED ITEM 3: THOUGHTS / ABOUT */}
-        <section className="bg-white p-8 rounded-sm shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-[#E7E5E4]/50">
-          <About />
-        </section>
-
-        {/* FEED ITEM 4: CONTACT */}
-        <section className="flex flex-col items-center justify-center text-center py-20 gap-4">
-          <span className="text-2xl font-serif italic text-[#A8A29E]">Shall we talk?</span>
-          <Contact />
-        </section>
-
-      </main>
+          </motion.div>
+        </SmoothScroll>
+      )}
     </div>
   );
 }

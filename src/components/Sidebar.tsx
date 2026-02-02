@@ -1,57 +1,53 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Github, Linkedin, Twitter, Mail } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { Github, Linkedin, Twitter } from "lucide-react";
 
 const navItems = [
-    { name: "01. Essence", href: "#about" },
-    { name: "02. Works", href: "#projects" },
-    { name: "03. Contact", href: "#contact" },
+    { name: "Essence", href: "#about" },
+    { name: "Selected Works", href: "#projects" },
+    { name: "Contact", href: "#contact" },
 ];
 
 export default function Sidebar() {
     return (
-        <aside className="fixed top-0 left-0 w-full md:w-[350px] h-auto md:h-screen bg-background border-b md:border-b-0 md:border-r border-foreground z-50 flex flex-col justify-between p-6 md:p-12">
-            {/* Header / Logo */}
-            <div className="flex justify-between items-start md:block">
-                <div>
-                    <h1 className="text-2xl font-bold uppercase tracking-tighter leading-none font-heading text-foreground">
-                        Hyeonjun<br />Jun
-                    </h1>
-                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/60">
-                        Creative Developer
-                    </p>
-                </div>
+        <aside className="fixed top-0 left-0 w-full md:w-[300px] h-screen bg-[#F4F1EA] text-[#1a1917] border-r border-[#1a1917]/10 z-50 flex flex-col justify-between">
 
-                {/* Mobile Menu Toggle could go here if needed, keeping it simple for now */}
+            {/* CELL 1: IDENTITY */}
+            <div className="p-8 md:p-12">
+                <h1 className="text-3xl font-bold tracking-tight leading-none font-heading mb-2">
+                    Hyeonjun<br />Jun
+                </h1>
+                <span className="text-sm font-serif italic text-[#C16524]">
+                    Creative Developer
+                </span>
             </div>
 
-            {/* Navigation - Desktop (Center) */}
-            <nav className="hidden md:flex flex-col gap-6">
-                {navItems.map((item) => (
+            {/* CELL 2: NAVIGATION */}
+            <nav className="flex-1 px-8 md:px-12 flex flex-col justify-center gap-6">
+                {navItems.map((item, i) => (
                     <Link
                         key={item.name}
                         href={item.href}
-                        className="text-sm font-bold uppercase tracking-[0.1em] text-foreground hover:text-accent transition-colors font-heading group flex items-center gap-4"
+                        className="group flex items-center gap-4 text-sm font-bold uppercase tracking-widest hover:text-[#C16524] transition-colors"
                     >
-                        <span className="w-2 h-2 bg-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1a1917] opacity-0 group-hover:opacity-100 transition-opacity" />
                         {item.name}
                     </Link>
                 ))}
             </nav>
 
-            {/* Footer / Socials - Desktop (Bottom) */}
-            <div className="hidden md:flex flex-col gap-6">
-                <div className="flex gap-4">
-                    <a href="#" className="text-foreground hover:text-accent transition-colors"><Github size={18} /></a>
-                    <a href="#" className="text-foreground hover:text-accent transition-colors"><Linkedin size={18} /></a>
-                    <a href="#" className="text-foreground hover:text-accent transition-colors"><Twitter size={18} /></a>
+            {/* CELL 3: METADATA */}
+            <div className="p-8 md:p-12">
+                <div className="flex gap-6 pb-6 border-b border-[#1a1917]/10 mb-6 opacity-60">
+                    <a href="#" className="hover:text-[#C16524] transition-colors"><Github size={18} /></a>
+                    <a href="#" className="hover:text-[#C16524] transition-colors"><Linkedin size={18} /></a>
+                    <a href="#" className="hover:text-[#C16524] transition-colors"><Twitter size={18} /></a>
                 </div>
-                <div className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">
-                    Est. 2026
-                </div>
+
+                <p className="text-[10px] font-mono uppercase tracking-widest opacity-40">
+                    Seoul, KR — {new Date().getFullYear()}
+                </p>
             </div>
         </aside>
     );

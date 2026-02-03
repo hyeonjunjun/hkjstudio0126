@@ -34,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable}`}>
+        <CustomCursor />
         <InertialScroll>
           {children}
         </InertialScroll>

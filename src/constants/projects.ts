@@ -1,85 +1,129 @@
 export interface Project {
     id: string;
     title: string;
-    subtitle: string;
-    category: string;
+    client: string;
+    sector: "Fashion" | "Automotive" | "SaaS" | "Industrial" | "Makers";
     year: string;
-    role: string;
-    credits: string;
-    location: string;
-    description: string;
-    services: string[];
-    media: string;
-    thumbnails: string[];
+    image: string;
+    mood: string;
+    editorial: {
+        headline: string;
+        subhead: string;
+        copy: string;
+        images: string[];
+    };
+    schematic: {
+        stack: string[];
+        grid: string;
+        typography: string;
+        colors: string[];
+    };
 }
 
 export const PROJECTS: Project[] = [
     {
         id: "01",
-        title: "SIFT",
-        subtitle: "Curating digital noise for the next generation.",
-        category: "Mobile Product",
+        title: "VOGUE REDESIGN",
+        client: "Condé Nast",
+        sector: "Fashion",
         year: "2026",
-        role: "Design Lead",
-        credits: "Ryan Jun",
-        location: "NYC - US",
-        description: "SIFT is a discovery platform for curated digital content, designed to filter out the noise and focus on high-signal inspiration.",
-        services: ["App Design", "Branding", "Motion", "Research"],
-        media: "/images/sift-v2.jpg",
-        thumbnails: [
-            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=200&auto=format&fit=crop"
-        ]
+        image: "/images/vogue.jpg",
+        mood: "#7f1d1d",
+        editorial: {
+            headline: "The Rebirth of Red",
+            subhead: "Digital Maximalism",
+            copy: "Reimagining the digital presence of the world's most influential fashion authority. A system built on tension, white space, and typographic authority.",
+            images: ["/images/vogue-1.jpg", "/images/vogue-2.jpg"],
+        },
+        schematic: {
+            stack: ["Next.js 14", "WebGL", "Sanity CMS"],
+            grid: "12-Col Liquid",
+            typography: "Bodoni Moda / Inter",
+            colors: ["#7f1d1d", "#000000", "#ffffff"],
+        },
     },
     {
         id: "02",
-        title: "DRIFT",
-        subtitle: "A physics-based design language for spatial computing.",
-        category: "Design System",
-        year: "2026",
-        role: "Creative Director",
-        credits: "HKJ Studio",
-        location: "NYC - US",
-        description: "Antigravity is a robust design system built on the principles of weight, inertia, and fluid motion, specifically tailored for immersive interfaces.",
-        services: ["System Design", "WebGL", "Documentation", "UI/UX"],
-        media: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2670&auto=format&fit=crop",
-        thumbnails: [
-            "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=200&auto=format&fit=crop"
-        ]
+        title: "MODEL 3 INTERFACE",
+        client: "Tesla",
+        sector: "Automotive",
+        year: "2025",
+        image: "/images/tesla.jpg",
+        mood: "#172554",
+        editorial: {
+            headline: "Autonomy in Motion",
+            subhead: "HMI Design System",
+            copy: "Defining the interaction language for Level 5 autonomy. Trust through transparency.",
+            images: ["/images/tesla-1.jpg"],
+        },
+        schematic: {
+            stack: ["C++ / Qt", "React Native", "OpenGL"],
+            grid: "Fluid 8px",
+            typography: "Gotham Pro / Mono",
+            colors: ["#172554", "#e2e8f0"],
+        },
     },
     {
         id: "03",
-        title: "VerbAItim",
-        subtitle: "Reimagining light as a structural element in digital space.",
-        category: "Web Platform",
-        year: "2026",
-        role: "Interaction Designer",
-        credits: "NYEdTech Team",
-        location: "New York - US",
-        description: "Luma explores the intersection of volumetric lighting and web-based navigation, creating an ethereal experience for luxury brands.",
-        services: ["Art Direction", "Web Design", "Shaders", "Frontend"],
-        media: "https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=2576&auto=format&fit=crop",
-        thumbnails: [
-            "https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop"
-        ]
+        title: "CHECKOUT V3",
+        client: "Stripe",
+        sector: "SaaS",
+        year: "2025",
+        image: "/images/stripe.jpg",
+        mood: "#6366f1",
+        editorial: {
+            headline: "The Invisible Ledger",
+            subhead: "Financial Infrastructure",
+            copy: "Reducing friction in global commerce to zero. A study in microscopic interaction design.",
+            images: [],
+        },
+        schematic: {
+            stack: ["React", "Ruby", "Sorbet"],
+            grid: "4px Baseline",
+            typography: "Sohne / Bandit",
+            colors: ["#6366f1", "#0a0a0a"],
+        },
     },
     {
         id: "04",
-        title: "STUDIO MESSA",
-        subtitle: "A discovery platform for experiential projects.",
-        category: "Visual Identity",
+        title: "CHAIR STUDY 04",
+        client: "Vitra",
+        sector: "Industrial",
         year: "2024",
-        role: "AD & Designer",
-        credits: "Ilja Van Eck",
-        location: "Sydney - AU",
-        description: "Studio Messa is a curated collection of boutique hotels and products, guiding travellers towards intentional discovery.",
-        services: ["Brand Identity", "Art Direction", "Web Design", "Webflow"],
-        media: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2670&auto=format&fit=crop",
-        thumbnails: [
-            "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=200&auto=format&fit=crop"
-        ]
-    }
+        image: "/images/vitra.jpg",
+        mood: "#404040",
+        editorial: {
+            headline: "Specific Objects",
+            subhead: "Material Research",
+            copy: "An exploration of molded plywood and sustainable polymers.",
+            images: []
+        },
+        schematic: {
+            stack: ["Rhino 3D", "Keyshot", "CNC"],
+            grid: "Golden Ratio",
+            typography: "Helvetica Now",
+            colors: ["#404040", "#d4d4d4"]
+        }
+    },
+    {
+        id: "05",
+        title: "SYSTEM ARC",
+        client: "Internal",
+        sector: "Makers",
+        year: "2024",
+        image: "/images/system.jpg",
+        mood: "#166534",
+        editorial: {
+            headline: "Order from Chaos",
+            subhead: "Design Ops",
+            copy: "Internal tooling to accelerate the design-to-code pipeline.",
+            images: []
+        },
+        schematic: {
+            stack: ["Rust", "Tauri", "Svelte"],
+            grid: "Modular",
+            typography: "JetBrains Mono",
+            colors: ["#166534", "#f0fdf4"]
+        }
+    },
 ];

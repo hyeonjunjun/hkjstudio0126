@@ -1,11 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import BreathingText from "@/components/ui/BreathingText";
+import ProjectIndex from "@/components/ProjectIndex";
+import AmbientBackground from "@/components/AmbientBackground";
 
 export default function Home() {
+  const [activeMood, setActiveMood] = useState<string | null>(null);
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8 sm:p-20 font-sans">
-      <div className="flex flex-col items-start gap-4 w-full max-w-2xl">
+    <main className="min-h-screen flex flex-col items-center justify-center p-8 sm:p-20 font-sans relative">
+      <AmbientBackground activeColor={activeMood} />
+
+      <div className="flex flex-col items-start gap-4 w-full max-w-2xl z-10 transition-colors duration-700">
         <h1 className="text-8xl sm:text-9xl font-semibold tracking-tighter leading-none select-none">
           Ryan Jun
         </h1>
@@ -24,6 +31,8 @@ export default function Home() {
             Focusing on the intersection of craft and code.
           </p>
         </div>
+
+        <ProjectIndex onHover={setActiveMood} />
       </div>
     </main>
   );

@@ -1,35 +1,24 @@
 import type { Metadata } from "next";
-import { Fraunces, JetBrains_Mono, Permanent_Marker } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
-import CustomCursor from "@/components/CustomCursor";
-import GrainOverlay from "@/components/GrainOverlay";
-import PaperTexture from "@/components/PaperTexture";
+import AtmosphericGrain from "@/components/AtmosphericGrain";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const sans = Inter({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
-});
-
-const permanentMarker = Permanent_Marker({
-  variable: "--font-permanent-marker",
-  weight: "400",
+const mono = JetBrains_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Ryan Jun | Code is Craft",
-  description: "A digital artisan's workbench.",
+  title: "Ryan Jun | Design Engineer",
+  description: "Portfolio of Ryan Jun. Building AI-focused products and design systems.",
 };
 
 export default function RootLayout({
@@ -39,23 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fraunces.variable} ${jetbrainsMono.variable} ${permanentMarker.variable} antialiased`}>
-        {/* Global Texture Layers */}
-        <PaperTexture />
-        <GrainOverlay />
-
-        <CustomCursor />
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
-
-        {/* SVG Filters (Hidden) */}
-        <svg className="hidden">
-          <filter id="ink-bleed">
-            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
-          </filter>
-        </svg>
+      <body className={`${sans.variable} ${mono.variable} antialiased bg-background text-foreground`}>
+        <AtmosphericGrain />
+        <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
   );

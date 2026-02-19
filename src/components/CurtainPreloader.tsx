@@ -65,7 +65,8 @@ export default function CurtainPreloader() {
         <AnimatePresence>
             {visible && (
                 <motion.div
-                    className="fixed inset-0 z-[60] bg-canvas flex items-center justify-center"
+                    className="fixed inset-0 z-[60] flex items-center justify-center"
+                    style={{ backgroundColor: "#faf9f7" }}
                     initial={{ y: 0 }}
                     animate={isLoaded ? { y: "-100%" } : { y: 0 }}
                     transition={{

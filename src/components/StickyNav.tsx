@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -9,7 +9,6 @@ export default function StickyNav() {
     const [hidden, setHidden] = useState(true);
 
     useMotionValueEvent(scrollY, "change", (latest) => {
-        const previous = scrollY.getPrevious() || 0;
         // Show after 90vh (past hero)
         if (latest > window.innerHeight * 0.9) {
             setHidden(false);
@@ -28,7 +27,7 @@ export default function StickyNav() {
         >
             <Link
                 href="/"
-                className="font-pixel text-[10px] tracking-[0.25em] uppercase text-ink hover:text-accent transition-colors duration-300"
+                className="font-pixel text-[10px] tracking-[0.25em] uppercase text-ink hover:text-accent hover:drop-shadow-[0_0_5px_var(--color-accent)] transition-all duration-300"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
                 Studio Nabi
@@ -43,7 +42,7 @@ export default function StickyNav() {
                     <Link
                         key={label}
                         href={href}
-                        className="font-pixel text-[9px] tracking-[0.2em] uppercase text-ink-muted hover:text-ink transition-colors duration-300"
+                        className="font-pixel text-[9px] tracking-[0.2em] uppercase text-ink-muted hover:text-accent hover:drop-shadow-[0_0_5px_var(--color-accent)] transition-all duration-300"
                     >
                         {label}
                     </Link>

@@ -3,6 +3,8 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
+import TextScramble from "@/components/TextScramble";
+
 
 /**
  * HeroSanctuary
@@ -211,7 +213,7 @@ export default function HeroSanctuary() {
                                     transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
                                 }}
                             >
-                                Ryan Jun
+                                <TextScramble>Ryan Jun</TextScramble>
                             </motion.span>
                         </div>
 
@@ -225,7 +227,7 @@ export default function HeroSanctuary() {
                                     transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
                                 }}
                             >
-                                Design
+                                <TextScramble>Design</TextScramble>
                             </motion.span>
                         </div>
 
@@ -239,7 +241,7 @@ export default function HeroSanctuary() {
                                     transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
                                 }}
                             >
-                                Engineer
+                                <TextScramble>Engineer</TextScramble>
                             </motion.span>
                             <motion.span
                                 className="font-display italic text-[clamp(2rem,5vw,5rem)] text-ink-faint will-change-transform"

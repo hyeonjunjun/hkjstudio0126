@@ -102,8 +102,9 @@ export default function CursorDot() {
     }, []);
 
     useEffect(() => {
-        const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-        if (isTouchDevice) return;
+        // Robust check for mouse/trackpad (fixes issues on hybrid devices like Surface/gaming laptops)
+        const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
+        if (!hasFinePointer) return;
 
         setIsVisible(true);
 

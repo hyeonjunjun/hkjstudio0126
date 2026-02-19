@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: "#ffffff",
+        canvas: "#faf9f7",
         ink: "#0a0a0a",
         "ink-muted": "#555555",
         "ink-faint": "#999999",

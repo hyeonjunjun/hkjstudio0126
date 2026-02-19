@@ -68,7 +68,7 @@ function ImageBlock({ src, index }: { src: string; index: number }) {
                 alt=""
                 fill
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                sizes="(max-width: 768px) 100vw, 90vw"
+                sizes="(max-width: 768px) 100vw, 50vw"
                 quality={90}
                 priority={index === 0}
             />
@@ -188,43 +188,16 @@ export default function ScrollStage({ project }: ScrollStageProps) {
                 </motion.div>
             </div>
 
-            {/* ─── Image Stream (Editorial Grid) ─── */}
+            {/* ─── Image Stream (Strict 2-Column Grid) ─── */}
             <div className="px-6 sm:px-12 lg:px-20 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {allImages.map((src, i) => {
-                    const isFirst = i === 0;
-                    // Logic: First image is always full width.
-                    // Subsequent images default to half width.
-                    // If we have an odd number of remaining images, the very last one could be full width to balance (optional).
-                    // Current logic: Just first is full. If total is odd, last one is naturally alone in row (half width) or we can force it full.
-                    // Let's force the last image to be full width IF it's an only child on the last row.
-                    // Row structure: [Full] [Half, Half] [Half, Half] ...
-                    // If i is last, and (total - 1) is even -> it shares a row.
-                    // If i is last, and (total - 1) is odd -> it is alone.
-                    // total = 2 (Full, 1). Remainder 1 (Odd). Alone.
-                    // total = 3 (Full, 1, 2). Remainder 2 (Even). Pair.
-
-                    const isLast = i === allImages.length - 1;
-                    const remainder = allImages.length - 1;
-                    const isOrphan = isLast && (remainder % 2 !== 0);
-
-                    // Actually simple logic: First is col-span-2.
-                    // If it is an orphan last child, make it col-span-2 too?
-                    // Let's stick to the "Hero + Grid" pattern. First is wide. Last is wide if it's the 4th, 6th... 
-                    // Wait, if N=2: [Full] [Orphan]. Orphan looks better as Full.
-                    // If N=4: [Full] [Half Half] [Orphan]. Orphan looks better as Full.
-                    // So yes, if it's the last element and it would be an orphan, span full.
-
-                    const spanFull = isFirst || isOrphan;
-
-                    return (
-                        <div
-                            key={`${src}-${i}`}
-                            className={`${spanFull ? "md:col-span-2" : "md:col-span-1"}`}
-                        >
-                            <ImageBlock src={src} index={i} />
-                        </div>
-                    );
-                })}
+                {allImages.map((src, i) => (
+                    <div
+                        key={`${src}-${i}`}
+                        className="md:col-span-1"
+                    >
+                        <ImageBlock src={src} index={i} />
+                    </div>
+                ))}
             </div>
 
             {/* ─── Technical Details ─── */}

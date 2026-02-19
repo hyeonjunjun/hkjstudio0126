@@ -25,7 +25,7 @@ export default function DynamicIsland() {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleScroll = useCallback(() => {
-        setIsScrolled(window.scrollY > SCROLL_THRESHOLD);
+        setIsScrolled(window.scrollY > window.innerHeight);
     }, []);
 
     useEffect(() => {

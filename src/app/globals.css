@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* ─── Marquee Ticker ─── */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee-paused {
+  animation-play-state: paused;
+}
+
 /* ─── Studio Nabi · Digital Naturalism ─── */
 
 @theme {
@@ -40,5 +59,51 @@ body {
 
   .font-display {
     font-family: var(--font-display), Georgia, serif;
+  }
+
+  /* ─── 12-Column Grid ─── */
+
+  .grid-layout {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1rem;
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .grid-layout {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .grid-layout {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  /* Edge-to-edge grid (no side padding) */
+  .grid-bleed {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1rem;
+  }
+
+  /* Inset grid (tighter max-width for body copy) */
+  .grid-inset {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }

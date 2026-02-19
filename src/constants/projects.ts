@@ -6,6 +6,10 @@ export interface Project {
     year: string;
     image: string;
     mood: string;
+    /** Specimen metadata */
+    classification?: string;
+    habitat?: string;
+    status?: "Active" | "Archived";
     editorial: {
         headline: string;
         subhead: string;

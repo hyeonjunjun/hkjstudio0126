@@ -7,22 +7,59 @@ import { useStudioStore } from "@/lib/store";
 /**
  * CurtainPreloader
  * ─────────────────
- * A solid canvas-colored curtain that covers the viewport on mount,
- * then slides upward to "unveil" the site. Removes itself after animation.
+ * Choreographed brand moment inspired by Studio Dialect.
+ *
+ * Sequence (~2.8s):
+ *   0.3s  — "STUDIO" slides in from left, letter-by-letter
+ *   0.6s  — "NABI" drops from above, letter-by-letter (spring)
+ *   1.4s  — "Seoul · Est. 2024" fades in
+ *   2.0s  — Everything scales down + fades
+ *   2.4s  — Curtain slides up
  */
+
+const studioVariants = {
+    hidden: {},
+    visible: {
+        transition: { staggerChildren: 0.04, delayChildren: 0.3 },
+    },
+};
+
+const nabiVariants = {
+    hidden: {},
+    visible: {
+        transition: { staggerChildren: 0.06, delayChildren: 0.7 },
+    },
+};
+
+const letterSlideIn = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+        opacity: 1,
+        x: 0,
+        transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+    },
+};
+
+const letterDropIn = {
+    hidden: { opacity: 0, y: -30 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { type: "spring" as const, stiffness: 300, damping: 20 },
+    },
+};
+
 export default function CurtainPreloader() {
     const [visible, setVisible] = useState(true);
     const setLoaded = useStudioStore((s) => s.setLoaded);
+    const isLoaded = useStudioStore((s) => s.isLoaded);
 
     useEffect(() => {
-        // Simulate asset readiness — in production, gate on actual 3D load
         const timer = setTimeout(() => {
             setLoaded(true);
-        }, 800);
+        }, 2400);
         return () => clearTimeout(timer);
     }, [setLoaded]);
-
-    const isLoaded = useStudioStore((s) => s.isLoaded);
 
     return (
         <AnimatePresence>
@@ -33,21 +70,64 @@ export default function CurtainPreloader() {
                     animate={isLoaded ? { y: "-100%" } : { y: 0 }}
                     transition={{
                         duration: 1.2,
-                        ease: [0.76, 0, 0.24, 1], // custom cubic-bezier — smooth "curtain pull"
+                        ease: [0.76, 0, 0.24, 1],
                     }}
                     onAnimationComplete={() => {
                         if (isLoaded) setVisible(false);
                     }}
                 >
-                    {/* Minimal loader text while curtain is visible */}
-                    <motion.span
-                        className="font-mono text-xs tracking-[0.3em] uppercase text-ink-muted"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2, duration: 0.6 }}
+                    {/* ─── Choreographed Title ─── */}
+                    <motion.div
+                        className="flex flex-col items-center select-none"
+                        animate={isLoaded ? { scale: 0.92, opacity: 0 } : {}}
+                        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                     >
-                        Studio Nabi
-                    </motion.span>
+                        {/* STUDIO — slides in from left */}
+                        <motion.div
+                            className="font-mono text-[11px] tracking-[0.5em] uppercase text-ink-muted flex overflow-hidden"
+                            variants={studioVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            {"STUDIO".split("").map((char, i) => (
+                                <motion.span
+                                    key={`s-${i}`}
+                                    variants={letterSlideIn}
+                                    className="inline-block will-change-transform"
+                                >
+                                    {char}
+                                </motion.span>
+                            ))}
+                        </motion.div>
+
+                        {/* NABI — drops in from above */}
+                        <motion.div
+                            className="font-display text-[clamp(3rem,10vw,6rem)] leading-[0.85] tracking-[-0.02em] text-ink mt-1 flex overflow-hidden"
+                            variants={nabiVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            {"NABI".split("").map((char, i) => (
+                                <motion.span
+                                    key={`n-${i}`}
+                                    variants={letterDropIn}
+                                    className="inline-block will-change-transform"
+                                >
+                                    {char}
+                                </motion.span>
+                            ))}
+                        </motion.div>
+
+                        {/* Subtitle */}
+                        <motion.p
+                            className="font-mono text-[9px] tracking-[0.3em] uppercase text-ink-faint mt-6"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.4, duration: 0.6 }}
+                        >
+                            Seoul · Est. 2024
+                        </motion.p>
+                    </motion.div>
                 </motion.div>
             )}
         </AnimatePresence>

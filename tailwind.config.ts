@@ -20,11 +20,26 @@ const config: Config = {
         sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
       },
+      /* ─── 12-Column Grid System ─── */
+      gridTemplateColumns: {
+        layout: "repeat(12, 1fr)",
+      },
+      gap: {
+        gutter: "1rem",   /* 16px gutter */
+      },
+      maxWidth: {
+        grid: "1440px",
+      },
       container: {
         center: true,
-        padding: "2rem",
+        padding: {
+          DEFAULT: "1rem",
+          sm: "1.5rem",
+          lg: "2rem",
+          xl: "2rem",
+        },
         screens: {
-          "2xl": "1400px",
+          "2xl": "1440px",
         },
       },
       borderRadius: {
@@ -38,3 +53,4 @@ const config: Config = {
 };
 
 export default config;
+

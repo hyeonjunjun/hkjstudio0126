@@ -41,7 +41,7 @@ function MetaItem({ label, value }: { label: string; value: string }) {
             <span className="font-pixel text-[9px] tracking-[0.25em] uppercase text-accent">
                 {label}
             </span>
-            <span className="font-sans text-sm text-ink">
+            <span className="font-sans text-sm text-ink transition-colors duration-300 hover:text-accent cursor-default">
                 {value}
             </span>
         </div>
@@ -220,7 +220,7 @@ export default function ScrollStage({ project }: ScrollStageProps) {
                         </span>
                         <div className="flex flex-col gap-2">
                             {project.schematic.stack.map((tech) => (
-                                <span key={tech} className="font-sans text-sm text-ink">
+                                <span key={tech} className="font-sans text-sm text-ink transition-colors duration-300 hover:text-accent cursor-default">
                                     {tech}
                                 </span>
                             ))}
@@ -264,21 +264,22 @@ export default function ScrollStage({ project }: ScrollStageProps) {
             <div className="border-t border-ink/[0.06]">
                 <Link
                     href={`/work/${nextProject.id}`}
-                    className="group block px-6 sm:px-12 lg:px-20 py-16 sm:py-24"
+                    className="group relative z-20 block px-6 sm:px-12 lg:px-20 py-16 sm:py-24 transition-all duration-300 bg-transparent hover:bg-black cursor-pointer"
                 >
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                        className="group-hover:text-white transition-colors duration-300"
                     >
-                        <p className="font-pixel text-[9px] tracking-[0.3em] uppercase text-ink-faint mb-4">
+                        <p className="font-pixel text-[9px] tracking-[0.3em] uppercase text-ink-faint mb-4 group-hover:text-white/60 transition-colors duration-300">
                             Next Project
                         </p>
-                        <h3 className="font-display italic text-[clamp(2rem,5vw,4rem)] leading-[1.05] text-ink group-hover:text-accent transition-colors duration-500">
+                        <h3 className="font-display italic text-[clamp(2rem,5vw,4rem)] leading-[1.05] text-ink group-hover:text-[#8b9e6b] transition-colors duration-300">
                             {nextProject.title}
                         </h3>
-                        <p className="font-sans text-sm text-ink-muted mt-2 group-hover:text-ink transition-colors duration-500">
+                        <p className="font-sans text-sm text-ink-muted mt-2 group-hover:text-white/80 transition-colors duration-300">
                             {nextProject.pitch}
                         </p>
                     </motion.div>

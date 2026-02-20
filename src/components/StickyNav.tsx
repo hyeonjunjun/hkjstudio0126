@@ -3,6 +3,7 @@
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
+import RollingLink from "@/components/RollingLink";
 
 export default function StickyNav() {
     const { scrollY } = useScroll();
@@ -25,13 +26,11 @@ export default function StickyNav() {
             animate={hidden ? { y: -100, opacity: 0 } : { y: 0, opacity: 1 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
-            <Link
+            <RollingLink
                 href="/"
-                className="font-pixel text-[10px] tracking-[0.25em] uppercase text-ink hover:text-accent hover:drop-shadow-[0_0_5px_var(--color-accent)] transition-all duration-300"
+                label="Studio Nabi"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-                Studio Nabi
-            </Link>
+            />
 
             <div className="flex gap-6 sm:gap-8">
                 {[
@@ -39,13 +38,11 @@ export default function StickyNav() {
                     { label: "About", href: "#about" },
                     { label: "Contact", href: "mailto:stuuudionabi@gmail.com" },
                 ].map(({ label, href }) => (
-                    <Link
+                    <RollingLink
                         key={label}
                         href={href}
-                        className="font-pixel text-[9px] tracking-[0.2em] uppercase text-ink-muted hover:text-accent hover:drop-shadow-[0_0_5px_var(--color-accent)] transition-all duration-300"
-                    >
-                        {label}
-                    </Link>
+                        label={label}
+                    />
                 ))}
             </div>
         </motion.nav>

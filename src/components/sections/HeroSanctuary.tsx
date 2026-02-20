@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
 import TextScramble from "@/components/TextScramble";
+import RollingLink from "@/components/RollingLink";
 
 
 /**
@@ -102,7 +103,7 @@ export default function HeroSanctuary() {
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover opacity-50 mix-blend-multiply contrast-110"
+                    className="w-full h-full object-cover opacity-40 mix-blend-multiply contrast-110"
                     style={{ filter: "grayscale(40%) contrast(1.1)" }}
                     ref={(el) => {
                         if (el) el.playbackRate = 0.75;
@@ -148,12 +149,10 @@ export default function HeroSanctuary() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     >
-                        <Link
+                        <RollingLink
                             href="/"
-                            className="font-pixel text-[10px] tracking-[0.25em] uppercase text-ink-muted hover:text-ink transition-colors duration-300"
-                        >
-                            Studio Nabi
-                        </Link>
+                            label="Studio Nabi"
+                        />
                     </motion.div>
 
                     {/* Numbered Navigation */}
@@ -177,19 +176,15 @@ export default function HeroSanctuary() {
                                         transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
                                     },
                                 }}
+                                className="flex items-center gap-3 py-1"
                             >
-                                <Link
+                                <span className="font-pixel text-[10px] tracking-[0.2em] text-ink-faint">
+                                    {item.num}
+                                </span>
+                                <RollingLink
                                     href={item.href}
-                                    className="group flex items-center gap-3 font-pixel text-[10px] tracking-[0.2em] uppercase text-ink-muted hover:text-ink transition-colors duration-300 py-2 -my-1"
-                                >
-                                    <span className="text-ink-faint group-hover:text-accent transition-colors duration-300">
-                                        {item.num}
-                                    </span>
-                                    <span className="relative">
-                                        {item.label}
-                                        <span className="absolute bottom-[-2px] left-0 w-0 h-[1px] bg-ink group-hover:w-full transition-all duration-500 ease-out" />
-                                    </span>
-                                </Link>
+                                    label={item.label}
+                                />
                             </motion.div>
                         ))}
                     </motion.nav>
@@ -204,9 +199,9 @@ export default function HeroSanctuary() {
                 >
                     <h1 className="w-full max-w-[90vw] lg:max-w-[80vw]">
                         {/* Line 1: Ryan Jun — shallowest parallax */}
-                        <div className="overflow-hidden">
+                        <div className="overflow-hidden pb-4">
                             <motion.span
-                                className="block font-display italic text-[clamp(3rem,11vw,10rem)] leading-[0.88] tracking-[-0.04em] text-ink will-change-transform"
+                                className="block font-display italic text-[clamp(2.5rem,6vw,6rem)] leading-[1.1] tracking-[-0.02em] text-ink will-change-transform"
                                 variants={lineReveal}
                                 style={{
                                     transform: `translate(${mouseOffset.x * PARALLAX[0] * 100}px, ${mouseOffset.y * PARALLAX[0] * 100}px)`,
@@ -218,9 +213,9 @@ export default function HeroSanctuary() {
                         </div>
 
                         {/* Line 2: Design — medium parallax */}
-                        <div className="overflow-hidden mt-1">
+                        <div className="overflow-hidden mt-1 pb-4">
                             <motion.span
-                                className="block font-display italic text-[clamp(3rem,11vw,10rem)] leading-[0.88] tracking-[-0.04em] text-ink will-change-transform"
+                                className="block font-display italic text-[clamp(2.5rem,6vw,6rem)] leading-[1.1] tracking-[-0.02em] text-ink will-change-transform"
                                 variants={lineReveal}
                                 style={{
                                     transform: `translate(${mouseOffset.x * PARALLAX[1] * 100}px, ${mouseOffset.y * PARALLAX[1] * 100}px)`,
@@ -232,9 +227,9 @@ export default function HeroSanctuary() {
                         </div>
 
                         {/* Line 3: Engineer — deepest parallax */}
-                        <div className="overflow-hidden mt-1 flex items-baseline gap-4">
+                        <div className="overflow-hidden mt-1 pb-4 flex items-baseline gap-4">
                             <motion.span
-                                className="block font-display italic text-[clamp(3rem,11vw,10rem)] leading-[0.88] tracking-[-0.04em] text-ink will-change-transform"
+                                className="block font-display italic text-[clamp(2.5rem,6vw,6rem)] leading-[1.1] tracking-[-0.02em] text-ink will-change-transform"
                                 variants={lineReveal}
                                 style={{
                                     transform: `translate(${mouseOffset.x * PARALLAX[2] * 100}px, ${mouseOffset.y * PARALLAX[2] * 100}px)`,
@@ -244,7 +239,7 @@ export default function HeroSanctuary() {
                                 <TextScramble>Engineer</TextScramble>
                             </motion.span>
                             <motion.span
-                                className="font-display italic text-[clamp(2rem,5vw,5rem)] text-ink-faint will-change-transform"
+                                className="font-display italic text-[clamp(2rem,4vw,4rem)] text-ink-faint will-change-transform"
                                 variants={lineReveal}
                                 style={{
                                     transform: `translate(${mouseOffset.x * PARALLAX[2] * 100}px, ${mouseOffset.y * PARALLAX[2] * 100}px)`,

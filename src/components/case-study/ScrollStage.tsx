@@ -523,7 +523,7 @@ export default function ScrollStage({ project }: ScrollStageProps) {
                                 <p className="font-pixel text-[9px] tracking-[0.3em] uppercase text-ink-faint mb-6 group-hover:text-white/40 transition-colors">
                                     Next Sequence
                                 </p>
-                                <h3 className="font-display italic text-[clamp(3rem,8vw,7.5rem)] leading-[1] text-ink group-hover:text-accent transition-all duration-500 group-hover:translate-x-4">
+                                <h3 className="font-display italic text-[clamp(2.5rem,8vw,7.5rem)] leading-[1.2] text-ink group-hover:text-accent transition-all duration-500 group-hover:translate-x-4">
                                     {nextProject.title}
                                 </h3>
                                 <p className="font-sans text-sm text-ink-muted mt-10 max-w-xl group-hover:text-white/60 transition-colors leading-relaxed">

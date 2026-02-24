@@ -147,3 +147,46 @@ body {
 .delay-800 {
   animation-delay: 800ms;
 }
+
+/* ─── Marquee (Philosophy Strip) ─── */
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee-paused {
+  animation-play-state: paused;
+}
+
+/* ─── Line Scroll (Work Index Dividers) ─── */
+
+@keyframes line-scroll {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 200px 0;
+  }
+}
+
+.animate-line-scroll {
+  background: repeating-linear-gradient(90deg,
+      var(--color-ink) 0px,
+      var(--color-ink) 8px,
+      transparent 8px,
+      transparent 16px);
+  background-size: 200px 1px;
+  height: 1px;
+  animation: line-scroll 8s linear infinite;
+}

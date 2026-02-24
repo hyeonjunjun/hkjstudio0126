@@ -33,7 +33,7 @@ function WorkRow({ project, index, onHover, onLeave }: {
     return (
         <motion.div
             ref={rowRef}
-            className="border-b border-ink/[0.08] last:border-b-0 transition-all duration-500 group-hover/list:opacity-40 hover:!opacity-100 hover:translate-x-4"
+            className="transition-all duration-500 group-hover/list:opacity-40 hover:!opacity-100 hover:translate-x-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
@@ -92,6 +92,8 @@ function WorkRow({ project, index, onHover, onLeave }: {
                     </div>
                 </div>
             </Link>
+            {/* Animated scrolling divider line */}
+            <div className="animate-line-scroll opacity-[0.12]" />
         </motion.div>
     );
 }

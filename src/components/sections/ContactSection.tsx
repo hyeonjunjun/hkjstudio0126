@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import NothingEqLoader from "@/components/ui/NothingEqLoader";
+import LiveClock from "@/components/ui/LiveClock";
+import { useAudioStore } from "@/lib/audioStore";
 
 const SOCIALS = [
   { label: "GitHub", href: "#" },
@@ -9,30 +12,8 @@ const SOCIALS = [
   { label: "Twitter", href: "#" },
 ];
 
-function LiveClock() {
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      setTime(
-        now.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-          timeZoneName: "short",
-        })
-      );
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  return <span suppressHydrationWarning>{time || "—"}</span>;
-}
-
 export default function ContactSection() {
+  const { isPlaying } = useAudioStore();
   const [copied, setCopied] = useState(false);
   const email = "hello@hkjstudio.com";
 
@@ -60,54 +41,53 @@ export default function ContactSection() {
         borderTop: "1px solid var(--color-border)",
       }}
     >
+      {/* Section header */}
+      <div
+        className="flex items-center justify-between mb-16"
+        style={{
+          borderBottom: "1px solid var(--color-border)",
+          paddingBottom: "0.75rem",
+        }}
+      >
+        <span className="label">Contact</span>
+        {/* Removed 'Transmission' decor */}
+      </div>
+
       {/* CTA area */}
-      <div className="max-w-5xl mx-auto mb-16">
+      <div className="max-w-5xl mx-auto mb-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span className="label block mb-8">Contact</span>
-
           <p
-            className="font-sans mb-3"
+            className="font-sans mb-10"
             style={{
               fontSize: "var(--text-lg)",
               color: "var(--color-text)",
             }}
           >
-            Let&apos;s work together.
+            Let&apos;s make something together.
           </p>
 
-          <p
-            className="font-sans mb-10"
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-text-dim)",
-            }}
-          >
-            Open to projects that make me nervous.
-          </p>
-
-          {/* Email CTA */}
+          {/* Email CTA — dominant */}
           <button
             onClick={copyEmail}
-            className="group font-mono uppercase tracking-[0.1em] transition-colors duration-300"
+            className="group font-mono uppercase tracking-[0.05em] transition-colors duration-300 block"
             style={{
-              fontSize: "var(--text-xl)",
+              fontSize: "var(--text-3xl)",
               color: copied ? "var(--color-accent)" : "var(--color-text)",
-              letterSpacing: "0.03em",
+              letterSpacing: "0.02em",
+              lineHeight: 1.1,
             }}
           >
-            {copied ? "Copied ✓" : email}
+            {copied ? "Copied" : email}
           </button>
 
           <p
-            className="mt-3 font-mono transition-opacity duration-300"
+            className="mt-3 transition-opacity duration-300 micro"
             style={{
-              color: "var(--color-text-ghost)",
-              fontSize: "var(--text-xs)",
               opacity: copied ? 0 : 1,
             }}
           >
@@ -121,7 +101,7 @@ export default function ContactSection() {
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
         style={{
           borderTop: "1px solid var(--color-border)",
-          padding: "1rem var(--page-px) 1rem 0",
+          padding: "1rem 0",
         }}
       >
         {/* Social links */}
@@ -147,17 +127,12 @@ export default function ContactSection() {
           ))}
         </div>
 
-        {/* Clock + Copyright */}
+        {/* Clock + Copyright + EQ */}
         <div className="flex items-center gap-6">
-          <span
+          <LiveClock
+            showTimezone
             className="font-mono"
-            style={{
-              color: "var(--color-text-dim)",
-              fontSize: "var(--text-xs)",
-            }}
-          >
-            <LiveClock />
-          </span>
+          />
           <span
             className="font-mono"
             style={{
@@ -167,8 +142,13 @@ export default function ContactSection() {
           >
             &copy; {new Date().getFullYear()} HKJ Studio
           </span>
+          <div style={{ opacity: isPlaying ? 1 : 0, transition: "opacity 0.2s" }}>
+            <NothingEqLoader bars={3} segmentsPerBar={3} size={3} gap={2} intervalMs={200} />
+          </div>
         </div>
       </div>
+      {/* Extra padding buffer for the fixed AudioTransport bar */}
+      <div className="h-[40px]" />
     </section>
   );
 }

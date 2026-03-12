@@ -4,16 +4,17 @@ import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 
 /**
- * Cursor — soft gold orb that responds to context.
+ * Cursor — precise white instrument dot.
  *
  * States:
- *   default  → 10px warm glow orb
- *   link     → 4px dot
- *   image    → 60px ring with "View"
- *   explore  → 80px ring with "Explore"
+ *   default  → 6px white dot
+ *   link     → 4px white dot
+ *   image    → 50px thin ring + "View"
+ *   explore  → 60px thin ring + "Explore"
+ *   play     → 50px thin ring + play triangle
  */
 
-type CursorState = "default" | "link" | "image" | "explore";
+type CursorState = "default" | "link" | "image" | "explore" | "play";
 
 export default function Cursor() {
   const cursorX = useMotionValue(-100);
@@ -40,6 +41,12 @@ export default function Cursor() {
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+
+      const playTarget = target.closest("[data-cursor='play']");
+      if (playTarget) {
+        setCursorState("play");
+        return;
+      }
 
       const exploreTarget = target.closest("[data-cursor='explore']");
       if (exploreTarget) {
@@ -84,7 +91,15 @@ export default function Cursor() {
 
   if (!isVisible) return null;
 
-  const goldRgba = "196, 162, 101"; // --color-gold
+  const isRing = cursorState === "image" || cursorState === "explore" || cursorState === "play";
+
+  const sizeMap: Record<CursorState, number> = {
+    default: 6,
+    link: 4,
+    image: 50,
+    explore: 60,
+    play: 50,
+  };
 
   return (
     <>
@@ -94,8 +109,8 @@ export default function Cursor() {
           <motion.div
             key="ripple"
             className="fixed top-0 left-0 pointer-events-none z-[9997] rounded-full"
-            initial={{ width: 10, height: 10, opacity: 0.6 }}
-            animate={{ width: 50, height: 50, opacity: 0 }}
+            initial={{ width: 10, height: 10, opacity: 0.5 }}
+            animate={{ width: 40, height: 40, opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             style={{
@@ -103,13 +118,13 @@ export default function Cursor() {
               y: cursorY,
               translateX: "-50%",
               translateY: "-50%",
-              border: `1px solid rgba(${goldRgba}, 0.4)`,
+              border: "1px solid rgba(255, 255, 255, 0.3)",
             }}
           />
         )}
       </AnimatePresence>
 
-      {/* Main Orb */}
+      {/* Main Cursor */}
       <motion.div
         className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full"
         style={{
@@ -119,46 +134,20 @@ export default function Cursor() {
           translateY: "-50%",
         }}
         animate={{
-          width:
-            cursorState === "explore"
-              ? 80
-              : cursorState === "image"
-                ? 60
-                : cursorState === "link"
-                  ? 4
-                  : 10,
-          height:
-            cursorState === "explore"
-              ? 80
-              : cursorState === "image"
-                ? 60
-                : cursorState === "link"
-                  ? 4
-                  : 10,
+          width: sizeMap[cursorState],
+          height: sizeMap[cursorState],
           opacity: 1,
         }}
         transition={{
-          width: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
-          height: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+          width: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+          height: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
         }}
       >
         <div
-          className="absolute inset-0 rounded-full transition-all duration-300"
+          className="absolute inset-0 rounded-full transition-all duration-200"
           style={{
-            background:
-              cursorState === "image" || cursorState === "explore"
-                ? "transparent"
-                : `rgba(${goldRgba}, 0.9)`,
-            border:
-              cursorState === "image" || cursorState === "explore"
-                ? `1.5px solid rgba(${goldRgba}, 0.7)`
-                : "none",
-            boxShadow:
-              cursorState === "default"
-                ? `0 0 20px 6px rgba(${goldRgba}, 0.25), 0 0 40px 12px rgba(${goldRgba}, 0.08)`
-                : cursorState === "image" || cursorState === "explore"
-                  ? `0 0 30px 8px rgba(${goldRgba}, 0.12)`
-                  : "none",
+            background: isRing ? "transparent" : "rgba(255, 255, 255, 0.9)",
+            border: isRing ? "1px solid rgba(255, 255, 255, 0.6)" : "none",
             opacity: cursorState === "link" ? 0.8 : 1,
           }}
         />
@@ -166,7 +155,7 @@ export default function Cursor() {
         {cursorState === "image" && (
           <motion.span
             className="absolute inset-0 flex items-center justify-center font-mono uppercase tracking-[0.2em]"
-            style={{ fontSize: "9px", color: "var(--color-gold)" }}
+            style={{ fontSize: "8px", color: "var(--color-accent-dim)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.2 }}
@@ -177,8 +166,8 @@ export default function Cursor() {
 
         {cursorState === "explore" && (
           <motion.span
-            className="absolute inset-0 flex items-center justify-center font-mono uppercase tracking-[0.2em]"
-            style={{ fontSize: "9px", color: "var(--color-gold)" }}
+            className="absolute inset-0 flex items-center justify-center font-mono uppercase tracking-[0.15em]"
+            style={{ fontSize: "8px", color: "var(--color-accent-dim)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.2 }}
@@ -186,21 +175,20 @@ export default function Cursor() {
             Explore
           </motion.span>
         )}
-      </motion.div>
 
-      {/* Ambient glow halo */}
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9995] rounded-full"
-        style={{
-          x: smoothX,
-          y: smoothY,
-          translateX: "-50%",
-          translateY: "-50%",
-          width: 120,
-          height: 120,
-          background: `radial-gradient(circle, rgba(${goldRgba}, 0.04) 0%, transparent 70%)`,
-        }}
-      />
+        {cursorState === "play" && (
+          <motion.span
+            className="absolute inset-0 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.2 }}
+          >
+            <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+              <path d="M1 1L9 6L1 11V1Z" fill="rgba(255,255,255,0.7)" />
+            </svg>
+          </motion.span>
+        )}
+      </motion.div>
     </>
   );
 }

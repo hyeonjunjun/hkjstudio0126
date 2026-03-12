@@ -12,16 +12,19 @@
 
   /* ── Monochrome Palette ── */
   --color-bg: #000000;
-  --color-surface: #0a0a0a;
-  --color-surface-raised: #111111;
+  --color-surface: #060606;
+  --color-surface-raised: #0d0d0d;
   --color-border: #1a1a1a;
   --color-border-strong: #2a2a2a;
+  --color-border-active: #444444;
   --color-text: #d4d4d4;
-  --color-text-dim: #555555;
+  --color-text-dim: #666666;
   --color-text-ghost: #333333;
   --color-accent: #ffffff;
+  --color-accent-dim: #999999;
 
   /* ── Fluid Type Scale ── */
+  --text-micro: clamp(0.5rem, 0.48rem + 0.1vw, 0.575rem);
   --text-xs: clamp(0.6rem, 0.56rem + 0.15vw, 0.7rem);
   --text-sm: clamp(0.7rem, 0.65rem + 0.2vw, 0.8rem);
   --text-base: clamp(0.8rem, 0.75rem + 0.25vw, 0.95rem);
@@ -29,7 +32,7 @@
   --text-xl: clamp(1.3rem, 1.1rem + 1vw, 2rem);
   --text-2xl: clamp(1.8rem, 1.4rem + 2vw, 3rem);
   --text-3xl: clamp(2.2rem, 1.6rem + 3vw, 4.5rem);
-  --text-display: clamp(2.8rem, 2rem + 4vw, 6.5rem);
+  --text-display: clamp(3rem, 2rem + 5vw, 8rem);
 
   /* ── Layout ── */
   --grid-gap: clamp(0.5rem, 0.4rem + 0.5vw, 1rem);
@@ -92,6 +95,56 @@ body {
       linear-gradient(var(--color-border) 1px, transparent 1px),
       linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
     background-size: 60px 60px;
+  }
+
+  /* Micro label — Nothing OS / TE metadata */
+  .micro {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-text-ghost);
+  }
+
+  /* Playlist track row */
+  .track-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 200px 120px 60px 40px;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.75rem 0;
+    transition: background-color 0.2s ease;
+  }
+
+  @media (max-width: 1024px) {
+    .track-row {
+      grid-template-columns: 32px 1fr 60px 40px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .track-row {
+      grid-template-columns: 32px 1fr 40px;
+    }
+  }
+
+  .track-row:hover {
+    background-color: var(--color-surface-raised);
+  }
+
+  /* Nothing OS dot-matrix texture */
+  .dot-matrix {
+    background-image: radial-gradient(
+      circle, var(--color-border) 1px, transparent 1px
+    );
+    background-size: 16px 16px;
+  }
+
+  /* Hairline separator */
+  .hairline {
+    height: 1px;
+    background-color: var(--color-border);
+    width: 100%;
   }
 }
 

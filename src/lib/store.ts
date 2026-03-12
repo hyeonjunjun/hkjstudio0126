@@ -8,6 +8,10 @@ interface StudioState {
     /** Current scroll position from Lenis */
     scrollY: number;
     setScrollY: (y: number) => void;
+
+    /** Currently visible section for nav tracking */
+    activeSection: string;
+    setActiveSection: (s: string) => void;
 }
 
 export const useStudioStore = create<StudioState>((set) => ({
@@ -16,4 +20,7 @@ export const useStudioStore = create<StudioState>((set) => ({
 
     scrollY: 0,
     setScrollY: (y) => set({ scrollY: y }),
+
+    activeSection: "hero",
+    setActiveSection: (s) => set({ activeSection: s }),
 }));

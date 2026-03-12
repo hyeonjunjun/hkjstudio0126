@@ -16,11 +16,11 @@ export default function StatusBadge({
     >
       <span
         className="relative w-1.5 h-1.5 rounded-full"
-        style={{ backgroundColor: "var(--color-gold)" }}
+        style={{ backgroundColor: "var(--color-accent)" }}
       >
         <span
           className="absolute inset-0 rounded-full status-pulse"
-          style={{ backgroundColor: "var(--color-gold)" }}
+          style={{ backgroundColor: "var(--color-accent)" }}
         />
       </span>
       <span

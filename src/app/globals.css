@@ -1,80 +1,37 @@
 @import "tailwindcss";
 
-/* ═══════════════════════════════════════════
-   HKJ Studio · Day-to-Night UI System
-   Bone (#F7F3ED) → Dusk (#32343C) → Night (#151518)
-   Editorial serif + clean grotesk + monospace
-   ═══════════════════════════════════════════ */
+/**
+ * HKJ Studio — Blank Canvas (1-1 Reference Foundation)
+ * 
+ * Target Specs:
+ * - Voku: Archivo Typography, Slit-scan motion
+ * - Jonite: 26.67px Serif rhythm, #e6e7e8 background
+ * - Radiance: 24px Grid Gutter, Staggered Masonry
+ * - SNP: Pure Black #000000, Giant Wordmark
+ */
 
 :root {
   /* ── Typography ── */
   --font-serif: var(--font-editorial-new), "Georgia", serif;
-  --font-grotesk: var(--font-satoshi), system-ui, sans-serif;
-  --font-mono: var(--font-space-mono), "Courier New", monospace;
+  --font-sans: var(--font-satoshi), system-ui, sans-serif;
+  --font-archivo: var(--font-archivo), sans-serif;
+  --font-mono: var(--font-space-mono), monospace;
 
-  /* Backward-compat aliases */
-  --font-display: var(--font-serif);
-  --font-sans: var(--font-grotesk);
+  /* ── Reference Colors ── */
+  --color-hero-bg: #e6e7e8;
+  --color-bg: #F7F3ED; /* Default Base */
+  --color-text: #1a1a1a;
+  --color-text-dim: #666666;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-accent: #EB3300; /* Studio Accent */
+  --color-pure-black: #000000;
 
-  /* ── Day Phase (Default) — Bone ── */
-  --color-bg: #F7F3ED;
-  --color-surface: #EFEAE4;
-  --color-surface-raised: #E8E3DD;
-  --color-border: rgba(21, 21, 24, 0.1);
-  --color-border-strong: rgba(21, 21, 24, 0.25);
-  --color-border-active: rgba(21, 21, 24, 1);
-  --color-text: #151518;
-  --color-text-dim: #4A4A50;
-  --color-text-ghost: #8A8A90;
-  --color-accent: #EB3300;
-  --color-accent-warm: #CC2B00;
-
-  /* ── Fluid Type Scale ── */
-  --text-micro: clamp(0.6rem, 0.55rem + 0.1vw, 0.65rem);
-  --text-xs: clamp(0.7rem, 0.65rem + 0.15vw, 0.75rem);
-  --text-sm: clamp(0.8rem, 0.75rem + 0.2vw, 0.9rem);
-  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --text-lg: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
-  --text-xl: clamp(1.75rem, 1.5rem + 1vw, 2.25rem);
-  --text-2xl: clamp(2.5rem, 2rem + 2vw, 3.5rem);
-  --text-3xl: clamp(3.5rem, 2.5rem + 3vw, 5rem);
-  --text-display: clamp(4rem, 3rem + 8vw, 12rem);
-
-  /* ── Layout ── */
-  --grid-gap: clamp(1rem, 0.8rem + 1vw, 2rem);
-  --page-px: clamp(1.5rem, 1rem + 3vw, 4rem);
-  --grid-outer: clamp(2rem, 4vw, 6rem);
-
-  /* ── Noise ── */
-  --noise-opacity: 0.03;
-}
-
-/* ── Dusk Phase ── */
-[data-color-phase="dusk"] {
-  --color-bg: #32343C;
-  --color-surface: #3A3C44;
-  --color-surface-raised: #42444C;
-  --color-text: #E8E4DE;
-  --color-text-dim: #9A9AA0;
-  --color-text-ghost: #6A6A70;
-  --color-border: rgba(232, 228, 222, 0.1);
-  --color-border-strong: rgba(232, 228, 222, 0.25);
-  --color-border-active: rgba(232, 228, 222, 1);
-  --noise-opacity: 0.04;
-}
-
-/* ── Night Phase ── */
-[data-color-phase="night"] {
-  --color-bg: #151518;
-  --color-surface: #1E1E22;
-  --color-surface-raised: #27272C;
-  --color-text: #F7F3ED;
-  --color-text-dim: #B0B0B5;
-  --color-text-ghost: #6A6A70;
-  --color-border: rgba(247, 243, 237, 0.1);
-  --color-border-strong: rgba(247, 243, 237, 0.25);
-  --color-border-active: rgba(247, 243, 237, 1);
-  --noise-opacity: 0.06;
+  /* ── Reference Metrics ── */
+  --hero-fs: 26.67px;
+  --hero-lh: 34.67px;
+  --preloader-fs: 21.33px;
+  --grid-gap: 24px;
+  --page-px: clamp(1.5rem, 5vw, 6rem);
 }
 
 /* ── Base ── */
@@ -82,160 +39,37 @@
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-grotesk);
-  font-size: var(--text-base);
-  line-height: 1.5;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.01em;
-  transition: background-color 0.1s linear, color 0.1s linear;
+  overflow-x: hidden;
 }
 
-::selection {
-  background-color: var(--color-accent);
-  color: #FFFFFF;
-}
-
-/* ── Utilities ── */
+/* ── Utility Classes (Blank Canvas) ── */
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .section-padding {
+    padding-left: var(--page-px);
+    padding-right: var(--page-px);
   }
 
-  .font-mono {
-    font-family: var(--font-mono);
-  }
+  .font-archivo { font-family: var(--font-archivo); }
+  .font-serif { font-family: var(--font-serif); }
+  .font-mono { font-family: var(--font-mono); }
+  .font-sans { font-family: var(--font-sans); }
 
-  .font-sans {
-    font-family: var(--font-grotesk);
+  /* Slit-scan mask for Voku */
+  .mask-reveal {
+    overflow: hidden;
+    position: relative;
   }
-
-  .font-display {
-    font-family: var(--font-serif);
-  }
-
-  .font-serif {
-    font-family: var(--font-serif);
-  }
-
-  .font-grotesk {
-    font-family: var(--font-grotesk);
-  }
-
-  /* Editorial display heading — carved serif italic */
-  .editorial-display {
-    font-family: var(--font-serif);
-    font-style: italic;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-  }
-
-  /* Handwritten annotation — serif italic, red accent */
-  .annotation {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: var(--text-sm);
-    color: var(--color-accent);
-  }
-
-  /* TE-style label */
-  .label {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--color-text-dim);
-  }
-
-  /* Index number */
-  .index-num {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--color-text-dim);
-    letter-spacing: 0.05em;
-  }
-
-  /* Grid-line background */
-  .grid-lines {
-    background-image:
-      linear-gradient(var(--color-border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
-
-  /* Micro label — measurements, coordinates, system labels */
-  .micro {
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--color-text-ghost);
-  }
-
-  /* Dot-matrix texture */
-  .dot-matrix {
-    background-image: radial-gradient(
-      circle, var(--color-border) 1px, transparent 1px
-    );
-    background-size: 16px 16px;
-  }
-
-  /* Hairline separator */
-  .hairline {
-    height: 1px;
-    background-color: var(--color-border);
-    width: 100%;
-  }
-
-  /* Bordered container */
-  .te-panel {
-    border: 1px solid var(--color-border);
-    background-color: var(--color-bg);
-  }
-
-  /* Technical bracket label: [ LABEL ] */
-  .bracket-label {
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--color-text-ghost);
-  }
-  .bracket-label::before { content: "[ "; }
-  .bracket-label::after { content: " ]"; }
 }
 
-/* ── Paper Noise Texture ── */
+/* ── Reference Specific Keyframes ── */
 
-.paper-noise {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10;
-  opacity: var(--noise-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-}
-
-/* ── Status Badge Pulse ── */
-
-@keyframes statusPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0; transform: scale(2.5); }
-}
-
-.status-pulse {
-  animation: statusPulse 2s ease-in-out infinite;
-}
-
-/* ── Marquee ── */
-
-.marquee-track {
-  display: flex;
-  gap: 2rem;
-  width: max-content;
-  will-change: transform;
+@keyframes slitReveal {
+  0% { clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
 }
 
 @keyframes marquee {
@@ -244,58 +78,28 @@ body {
 }
 
 .animate-marquee {
-  animation: marquee 30s linear infinite;
+  animation: marquee 40s linear infinite;
 }
 
-/* ── Utility Animations ── */
+/* ── Paper Noise (SNP Style) ── */
 
-@keyframes fadeInSlow {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.paper-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
-/* ── Scroll Bar ── */
+/* ── Layout Overrides ── */
 
 ::-webkit-scrollbar {
-  width: 4px;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  transition: background 0.2s;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-}
-
-/* ── Recruiter Mode Overrides ── */
-
-[data-experience="recruiter"] {
-  --color-bg: #F7F3ED;
-  --color-text: #151518;
-  --color-surface: #EFEAE4;
-  --color-text-dim: #4A4A50;
-  --color-text-ghost: #8A8A90;
-  --color-border: rgba(21, 21, 24, 0.1);
-  --color-border-strong: rgba(21, 21, 24, 0.25);
-}
-
-/* ── Reduced Motion ── */
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .paper-noise {
-    display: none;
-  }
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

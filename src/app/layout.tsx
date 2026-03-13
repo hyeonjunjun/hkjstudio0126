@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
-import { Space_Mono, Inter, Newsreader } from "next/font/google";
+import { Space_Mono, Inter, Newsreader, Archivo } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
-import CurtainPreloader from "@/components/CurtainPreloader";
 import Cursor from "@/components/Cursor";
 import GlobalNav from "@/components/GlobalNav";
 import GlobalMarks from "@/components/GlobalMarks";
 import ScrollColorController from "@/components/ScrollColorController";
 
-/* ── Typography ── */
-
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
+const archivo = Archivo({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-space-mono",
+  variable: "--font-archivo",
 });
 
 const inter = Inter({
@@ -29,6 +25,15 @@ const newsreader = Newsreader({
   variable: "--font-editorial-new",
   style: ["normal", "italic"],
 });
+
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-space-mono",
+});
+
+import StudioPreloader from "@/components/StudioPreloader";
 
 /* ── Metadata ── */
 
@@ -66,13 +71,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceMono.variable} ${inter.variable} ${newsreader.variable} antialiased`}
+        className={`${spaceMono.variable} ${inter.variable} ${newsreader.variable} ${archivo.variable} antialiased`}
         style={{
           backgroundColor: "var(--color-bg)",
           color: "var(--color-text)",
         }}
       >
-        <CurtainPreloader />
+        <StudioPreloader />
         <GlobalMarks />
         <Cursor />
         <GlobalNav />

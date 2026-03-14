@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npx next build)",
       "Bash(ls \"c:\\\\Users\\\\Ryan Jun\\\\.gemini\\\\antigravity\\\\scratch\\\\hkjstudio\\\\public\\\\images\"\" 2>nul || echo \"No images directory found \")",
-      "WebFetch(domain:damso.com)"
+      "WebFetch(domain:damso.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

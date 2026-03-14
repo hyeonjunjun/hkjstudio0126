@@ -1,83 +1,155 @@
 "use client";
 
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
+import { gsap } from "@/lib/gsap";
 import { useStudioStore } from "@/lib/store";
-import { useState } from "react";
+import { NAV_LINKS, type NavLink } from "@/constants/navigation";
 import MobileMenu from "@/components/MobileMenu";
 
 /**
- * GlobalNav — 1-1 Jonite.com Recreation
- * 
- * Specs:
- * - Logo left (JONITE)
- * - Horizontal links right (PRODUCTS, SPECS, etc.)
- * - Font: Grotesk / Inter
- * - Pure architectural simplicity
+ * GlobalNav — Lowercase Voice Navigation
+ *
+ * Design DNA: Felix Nieto lowercase confidence + Prototype Studio contextual color
+ *
+ * Structure:
+ *   Left: "hkj" wordmark (font-sans, medium)
+ *   Right (desktop): works / about / contact
+ *   Right (mobile): "menu" text button
+ *
+ * - mix-blend-difference for universal readability
+ * - Framer Motion spring underline on link hover
+ * - GSAP stagger entrance after preloader
+ * - Shared NAV_LINKS constant (no duplication)
  */
 
-const NAV_LINKS = [
-  { label: "PRODUCTS", href: "#" },
-  { label: "SPECS", href: "#" },
-  { label: "CASE STUDIES", href: "#" },
-  { label: "ABOUT", href: "#" },
-  { label: "CONTACT", href: "#" },
-];
+const underlineTransition = {
+  type: "spring" as const,
+  stiffness: 500,
+  damping: 30,
+};
 
 export default function GlobalNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const isLoaded = useStudioStore((s) => s.isLoaded);
+  const setActiveOverlay = useStudioStore((s) => s.setActiveOverlay);
+  const navRef = useRef<HTMLElement>(null);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent, link: NavLink) => {
+      if (link.overlay) {
+        e.preventDefault();
+        setActiveOverlay(link.overlay);
+      }
+      // href links navigate normally
+    },
+    [setActiveOverlay]
+  );
+
+  // GSAP stagger entrance after preloader
+  useEffect(() => {
+    if (!isLoaded || !navRef.current) return;
+
+    const wordmark = navRef.current.querySelector("[data-wordmark]");
+    const links = navRef.current.querySelectorAll("[data-nav-link]");
+    const menuBtn = navRef.current.querySelector("[data-menu-btn]");
+
+    const targets = [wordmark, ...Array.from(links), menuBtn].filter(Boolean);
+
+    gsap.fromTo(
+      targets,
+      { opacity: 0, y: 8 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.06,
+        delay: 0.15,
+      }
+    );
+  }, [isLoaded]);
 
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
+        ref={navRef}
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between mix-blend-difference"
         style={{
-          padding: "2rem var(--page-px)",
-          opacity: isLoaded ? 1 : 0,
-          backgroundColor: "transparent",
+          padding: "clamp(1rem, 2.5vh, 1.75rem) var(--page-px)",
         }}
       >
-        {/* Logo */}
-        <a href="/" className="flex items-center gap-1 group">
+        {/* Wordmark */}
+        <a href="/" data-wordmark style={{ opacity: 0 }}>
           <span
-            className="font-bold tracking-[0.1em]"
-            style={{ 
-              fontSize: "1.5rem", 
-              color: "#1a1a1a",
-              fontFamily: "var(--font-satoshi), sans-serif" 
+            className="font-sans font-medium"
+            style={{
+              fontSize: "var(--text-sm)",
+              color: "#ffffff",
+              lineHeight: 1,
+              letterSpacing: "-0.01em",
             }}
           >
-            H JONITE
+            hkj
           </span>
         </a>
 
-        {/* Desktop Links (Jonite Style) */}
-        <div className="hidden lg:flex items-center gap-12">
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map((link) => (
             <a
               key={link.label}
-              href={link.href}
-              className="font-medium hover:opacity-50 transition-opacity flex items-center gap-1"
-              style={{ 
-                fontSize: "11px", 
-                letterSpacing: "0.1em",
-                color: "#1a1a1a"
+              href={link.href || "#"}
+              onClick={(e) => handleClick(e, link)}
+              data-nav-link
+              className="relative cursor-pointer"
+              style={{
+                opacity: 0,
+                fontSize: "var(--text-xs)",
+                letterSpacing: "0.02em",
+                color: "#ffffff",
+                fontFamily: "var(--font-sans)",
               }}
+              onMouseEnter={() => setHoveredLink(link.label)}
+              onMouseLeave={() => setHoveredLink(null)}
             >
-              {link.label}
-              {(link.label === "PRODUCTS" || link.label === "ABOUT") && (
-                <span className="text-[14px]">↘</span>
-              )}
+              <motion.span
+                className="inline-block"
+                animate={{ y: hoveredLink === link.label ? -2 : 0 }}
+                transition={underlineTransition}
+              >
+                {link.label}
+              </motion.span>
+
+              {/* Underline */}
+              <motion.span
+                className="absolute -bottom-[2px] left-0 right-0 h-[1px] bg-white origin-left"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: hoveredLink === link.label ? 1 : 0 }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              />
             </a>
           ))}
         </div>
 
-        {/* Mobile Toggle */}
+        {/* Mobile menu trigger */}
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="lg:hidden flex flex-col gap-1.5 items-end justify-center w-8 h-8 focus:outline-none"
+          data-menu-btn
+          className="md:hidden font-sans font-medium"
+          style={{
+            opacity: 0,
+            fontSize: "var(--text-xs)",
+            letterSpacing: "0.02em",
+            color: "#ffffff",
+          }}
+          aria-label="Open menu"
         >
-          <div className="w-full h-[1px] bg-black" />
-          <div className="w-2/3 h-[1px] bg-black" />
+          menu
         </button>
       </nav>
 

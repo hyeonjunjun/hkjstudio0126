@@ -1,242 +1,225 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "@/lib/gsap";
-import { useStudioStore } from "@/lib/store";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 /**
- * Cursor — Caliper Edition
+ * Cursor — SVG Crosshair with Context Labels
+ *
+ * Design DNA: cathydolle.com pixel crosshair
  *
  * States:
- *   default  → 8px dot, mix-blend-difference
- *   link     → 6px dot
- *   image    → 50px thin ring + "View"
- *   explore  → 60px thin ring + "Open"
- *   caliper  → 80px SVG measurement ring with tick marks + coordinate readout
- *   play     → 50px thin ring + play icon
+ *   default  → 8px SVG crosshair, mix-blend-difference
+ *   link     → 6px crosshair, dimmed
+ *   project  → 48px ring, 90deg spring rotation, "open" / "close" label
  *
- * Uses gsap.quickTo for X/Y positioning (replaces Framer springs).
- * No velocity-based stretching — precision aesthetic.
+ * Position: GSAP quickTo (frame-synced)
+ * State transitions: Framer Motion (spring physics)
+ * Click: Accent terracotta ripple
  */
 
-type CursorState = "default" | "link" | "image" | "explore" | "caliper" | "play";
+type CursorState = "default" | "link" | "project";
 
 export default function Cursor() {
-  const dotRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const rippleRef = useRef<HTMLDivElement>(null);
-  const coordRef = useRef<HTMLSpanElement>(null);
-  const quickToX = useRef<ReturnType<typeof gsap.quickTo> | null>(null);
-  const quickToY = useRef<ReturnType<typeof gsap.quickTo> | null>(null);
-  const mousePos = useRef({ x: -100, y: -100 });
+  const posXRef = useRef<ReturnType<typeof gsap.quickTo> | null>(null);
+  const posYRef = useRef<ReturnType<typeof gsap.quickTo> | null>(null);
 
-  const [cursorState, setCursorState] = useState<CursorState>("default");
-  const [isVisible, setIsVisible] = useState(false);
-  const experienceMode = useStudioStore((s) => s.experienceMode);
+  const [state, setState] = useState<CursorState>("default");
+  const [labelText, setLabelText] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(true);
+  const prefersReduced = useReducedMotion();
 
+  // Detect touch vs pointer
   useEffect(() => {
-    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
-    if (!hasFinePointer || !dotRef.current) return;
-
-    setTimeout(() => setIsVisible(true), 0);
-
-    // GSAP quickTo for smooth, frame-synced cursor
-    quickToX.current = gsap.quickTo(dotRef.current, "x", {
-      duration: 0.35,
-      ease: "power3.out",
-    });
-    quickToY.current = gsap.quickTo(dotRef.current, "y", {
-      duration: 0.35,
-      ease: "power3.out",
-    });
-
-    const moveCursor = (e: MouseEvent) => {
-      mousePos.current = { x: e.clientX, y: e.clientY };
-      quickToX.current?.(e.clientX);
-      quickToY.current?.(e.clientY);
-
-      // Update coordinate readout
-      if (coordRef.current) {
-        coordRef.current.textContent = `${e.clientX.toFixed(0)}, ${e.clientY.toFixed(0)}`;
-      }
-    };
-
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-
-      if (target.closest("[data-cursor='caliper']")) { setCursorState("caliper"); return; }
-      if (target.closest("[data-cursor='play']")) { setCursorState("play"); return; }
-      if (target.closest("[data-cursor='explore']")) { setCursorState("explore"); return; }
-      if (target.closest("[data-cursor='view'], img, video:not([data-cursor='explore'])")) {
-        setCursorState("image"); return;
-      }
-      if (target.closest("a, button, [role='button'], [role='link'], input, textarea, select")) {
-        setCursorState("link"); return;
-      }
-      setCursorState("default");
-    };
-
-    const handleMouseDown = () => {
-      if (rippleRef.current) {
-        gsap.set(rippleRef.current, {
-          x: mousePos.current.x,
-          y: mousePos.current.y,
-          width: 8,
-          height: 8,
-          opacity: 0.6,
-        });
-        gsap.to(rippleRef.current, {
-          width: 36,
-          height: 36,
-          opacity: 0,
-          duration: 0.35,
-          ease: "power2.out",
-        });
-      }
-    };
-
-    window.addEventListener("mousemove", moveCursor, { passive: true });
-    document.addEventListener("mouseover", handleMouseOver, { passive: true });
-    window.addEventListener("mousedown", handleMouseDown);
-
-    return () => {
-      window.removeEventListener("mousemove", moveCursor);
-      document.removeEventListener("mouseover", handleMouseOver);
-      window.removeEventListener("mousedown", handleMouseDown);
-    };
+    setIsTouchDevice(!window.matchMedia("(pointer: fine)").matches);
   }, []);
 
-  if (experienceMode === "recruiter") return null;
+  // Init GSAP quickTo
+  useEffect(() => {
+    if (isTouchDevice || prefersReduced || !containerRef.current) return;
 
-  const isRing = cursorState === "image" || cursorState === "explore" || cursorState === "play";
-  const isCaliper = cursorState === "caliper";
+    posXRef.current = gsap.quickTo(containerRef.current, "x", {
+      duration: 0.15,
+      ease: "power2.out",
+    });
+    posYRef.current = gsap.quickTo(containerRef.current, "y", {
+      duration: 0.15,
+      ease: "power2.out",
+    });
+  }, [isTouchDevice, prefersReduced]);
 
-  const sizeMap: Record<CursorState, number> = {
-    default: 8,
-    link: 6,
-    image: 50,
-    explore: 60,
-    caliper: 80,
-    play: 50,
-  };
+  // Resolve cursor state from event target
+  const resolveState = useCallback((target: HTMLElement) => {
+    const cursorEl = target.closest("[data-cursor]") as HTMLElement | null;
+    if (cursorEl) {
+      const attr = cursorEl.getAttribute("data-cursor");
+      if (attr === "project") {
+        setState("project");
+        setLabelText("open");
+        return;
+      }
+      if (attr === "close") {
+        setState("project");
+        setLabelText("close");
+        return;
+      }
+    }
 
-  const size = sizeMap[cursorState];
+    const interactive = target.closest(
+      "a, button, [role='button'], input, textarea, select, label"
+    );
+    if (interactive) {
+      setState("link");
+      setLabelText(null);
+      return;
+    }
+
+    setState("default");
+    setLabelText(null);
+  }, []);
+
+  // Global listeners
+  useEffect(() => {
+    if (isTouchDevice || prefersReduced) return;
+
+    const onMove = (e: MouseEvent) => {
+      if (!visible) setVisible(true);
+      posXRef.current?.(e.clientX);
+      posYRef.current?.(e.clientY);
+      resolveState(e.target as HTMLElement);
+    };
+
+    const onClick = (e: MouseEvent) => {
+      const el = rippleRef.current;
+      if (!el) return;
+      gsap.set(el, { x: e.clientX, y: e.clientY, scale: 0, opacity: 0.5 });
+      gsap.to(el, { scale: 2.5, opacity: 0, duration: 0.5, ease: "power2.out" });
+    };
+
+    const onLeave = () => setVisible(false);
+    const onEnter = () => setVisible(true);
+
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mousedown", onClick);
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    document.documentElement.addEventListener("mouseenter", onEnter);
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mousedown", onClick);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      document.documentElement.removeEventListener("mouseenter", onEnter);
+    };
+  }, [isTouchDevice, prefersReduced, visible, resolveState]);
+
+  if (isTouchDevice || prefersReduced) return null;
+
+  const isRing = state === "project";
+  const size = isRing ? 48 : state === "link" ? 6 : 8;
 
   return (
     <>
-      {/* Click Ripple */}
+      {/* Cursor element */}
+      <div
+        ref={containerRef}
+        className="fixed top-0 left-0 pointer-events-none z-[9999]"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.15s" }}
+      >
+        <motion.div
+          className="flex items-center justify-center"
+          style={{
+            marginLeft: -size / 2,
+            marginTop: -size / 2,
+            mixBlendMode: isRing ? "normal" : "difference",
+          }}
+          animate={{
+            width: size,
+            height: size,
+            rotate: isRing ? 90 : 0,
+          }}
+          transition={{
+            width: { type: "spring", stiffness: 400, damping: 28 },
+            height: { type: "spring", stiffness: 400, damping: 28 },
+            rotate: { type: "spring", stiffness: 300, damping: 20 },
+          }}
+        >
+          <AnimatePresence mode="wait">
+            {!isRing ? (
+              /* SVG crosshair */
+              <motion.svg
+                key="crosshair"
+                className="cursor-crosshair absolute inset-0"
+                viewBox="0 0 24 24"
+                width="100%"
+                height="100%"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: state === "link" ? 0.5 : 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.12 }}
+                style={{ color: "#ffffff" }}
+              >
+                <line x1="0" y1="12" x2="24" y2="12" />
+                <line x1="12" y1="0" x2="12" y2="24" />
+              </motion.svg>
+            ) : (
+              /* Ring + label */
+              <motion.div
+                key="ring"
+                className="absolute inset-0 rounded-full flex items-center justify-center"
+                style={{
+                  border: "1px solid var(--color-text)",
+                  backgroundColor: "rgba(245, 241, 237, 0.92)",
+                }}
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.4 }}
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              >
+                <AnimatePresence mode="wait">
+                  {labelText && (
+                    <motion.span
+                      key={labelText}
+                      className="font-sans select-none"
+                      style={{
+                        fontSize: "8px",
+                        letterSpacing: "0.05em",
+                        color: "var(--color-text)",
+                        whiteSpace: "nowrap",
+                      }}
+                      initial={{ opacity: 0, y: 3 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -3 }}
+                      transition={{ duration: 0.12 }}
+                    >
+                      {labelText}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+
+      {/* Click ripple */}
       <div
         ref={rippleRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9997] rounded-full"
+        className="fixed top-0 left-0 pointer-events-none z-[9998]"
         style={{
-          transform: "translate(-50%, -50%)",
-          border: "1px solid var(--color-accent)",
+          width: 20,
+          height: 20,
+          marginLeft: -10,
+          marginTop: -10,
+          borderRadius: "50%",
+          backgroundColor: "var(--color-accent)",
           opacity: 0,
         }}
       />
-
-      {/* Main Cursor */}
-      <div
-        ref={dotRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9999]"
-        style={{
-          width: size,
-          height: size,
-          transform: "translate(-50%, -50%)",
-          mixBlendMode: isRing || isCaliper ? "normal" : "difference",
-          opacity: isVisible ? 1 : 0,
-          transition: "width 0.25s cubic-bezier(0.22,1,0.36,1), height 0.25s cubic-bezier(0.22,1,0.36,1), opacity 0.15s",
-        }}
-      >
-        {/* Default / Link dot */}
-        {!isRing && !isCaliper && (
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: "#ffffff",
-              opacity: cursorState === "link" ? 0.7 : 1,
-            }}
-          />
-        )}
-
-        {/* Ring states (image, explore, play) */}
-        {isRing && (
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{ border: "1px solid rgba(0,0,0,0.6)" }}
-          />
-        )}
-
-        {/* Caliper state — SVG measurement ring */}
-        {isCaliper && (
-          <svg
-            className="absolute inset-0"
-            viewBox="0 0 80 80"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Outer ring */}
-            <circle cx="40" cy="40" r="38" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-            {/* Inner ring */}
-            <circle cx="40" cy="40" r="28" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
-            {/* Crosshairs */}
-            <line x1="40" y1="0" x2="40" y2="14" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            <line x1="40" y1="66" x2="40" y2="80" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            <line x1="0" y1="40" x2="14" y2="40" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            <line x1="66" y1="40" x2="80" y2="40" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            {/* Tick marks (8 around the ring) */}
-            {Array.from({ length: 8 }).map((_, i) => {
-              const angle = (i * 45 * Math.PI) / 180;
-              const x1 = 40 + Math.cos(angle) * 35;
-              const y1 = 40 + Math.sin(angle) * 35;
-              const x2 = 40 + Math.cos(angle) * 38;
-              const y2 = 40 + Math.sin(angle) * 38;
-              return (
-                <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="0.5" opacity="0.5" />
-              );
-            })}
-            {/* Center dot */}
-            <circle cx="40" cy="40" r="1.5" fill="var(--color-accent)" />
-          </svg>
-        )}
-
-        {/* Labels */}
-        {cursorState === "image" && (
-          <span
-            className="absolute inset-0 flex items-center justify-center font-mono uppercase tracking-[0.15em]"
-            style={{ fontSize: "7px", color: "var(--color-text)" }}
-          >
-            View
-          </span>
-        )}
-
-        {cursorState === "explore" && (
-          <span
-            className="absolute inset-0 flex items-center justify-center font-mono uppercase tracking-[0.1em]"
-            style={{ fontSize: "7px", color: "var(--color-text)" }}
-          >
-            Open
-          </span>
-        )}
-
-        {cursorState === "play" && (
-          <span className="absolute inset-0 flex items-center justify-center">
-            <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
-              <path d="M1 1L9 6L1 11V1Z" fill="rgba(0,0,0,0.7)" />
-            </svg>
-          </span>
-        )}
-
-        {/* Caliper coordinate readout */}
-        {isCaliper && (
-          <span
-            ref={coordRef}
-            className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono tracking-widest"
-            style={{ fontSize: "7px", color: "var(--color-text-dim)" }}
-          >
-            0, 0
-          </span>
-        )}
-      </div>
     </>
   );
 }

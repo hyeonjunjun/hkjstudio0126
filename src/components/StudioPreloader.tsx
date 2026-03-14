@@ -1,89 +1,210 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { gsap } from "@/lib/gsap";
 import { useStudioStore } from "@/lib/store";
+import { PROJECTS } from "@/constants/projects";
 
 /**
- * StudioPreloader — 1-1 Voku.studio Recreation
- * 
- * Specs:
- * - Font: Archivo, 21.33px
- * - Content: Vertical text cycle
- * - Motion: clip-path polygon masks for vertical revealing
- * - Progress: Horizontal scaleX bar
- * - Layout: Large center word, Bottom technical metadata
+ * StudioPreloader — Image Cycling Box
+ *
+ * Design DNA: ghuynguyen.vercel.app loading box
+ *
+ * Sequence:
+ *   1. Centered box (280×380px) on warm off-white background
+ *   2. Project images cycle rapidly inside (~130ms interval)
+ *   3. Thin accent progress line + mono counter below box
+ *   4. On fonts loaded: cycling stops on first project image
+ *   5. Box GSAP-scales to fill viewport (800ms, power3.inOut)
+ *   6. Preloader fades out, revealing hero section beneath
+ *   7. Sets isLoaded = true
  */
 
-const PHRASES = ["Design Engineering", "Systems Thinking", "NYC / Seoul", "HKJ Studio"];
+const PROJECT_IMAGES = PROJECTS.map((p) => p.image);
 
 export default function StudioPreloader() {
-  const [index, setIndex] = useState(0);
-  const [complete, setComplete] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<"loading" | "scaling" | "exit">(
+    "loading"
+  );
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const setLoaded = useStudioStore((s) => s.setLoaded);
 
-  useEffect(() => {
-    if (index < PHRASES.length - 1) {
-      const timer = setTimeout(() => setIndex(index + 1), 700);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(() => {
-        setComplete(true);
-        setTimeout(() => setLoaded(true), 800);
-      }, 1000);
-      return () => clearTimeout(timer);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const cycleRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tlRef = useRef<gsap.core.Timeline | null>(null);
+
+  // Stop cycling and freeze on first image
+  const stopCycling = useCallback(() => {
+    if (cycleRef.current) {
+      clearInterval(cycleRef.current);
+      cycleRef.current = null;
     }
-  }, [index, setLoaded]);
+    setCurrentImageIndex(0); // Freeze on first project (hero image)
+  }, []);
+
+  // Image cycling interval
+  useEffect(() => {
+    if (phase !== "loading") return;
+
+    cycleRef.current = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % PROJECT_IMAGES.length);
+    }, 130);
+
+    return () => {
+      if (cycleRef.current) clearInterval(cycleRef.current);
+    };
+  }, [phase]);
+
+  // Progress + load sequence
+  useEffect(() => {
+    const tl = gsap.timeline();
+    tlRef.current = tl;
+    const proxy = { value: 0 };
+
+    // Phase 1: Quick fill to ~65%
+    tl.to(proxy, {
+      value: 0.65,
+      duration: 1.2,
+      ease: "power2.out",
+      onUpdate: () => setProgress(proxy.value),
+    });
+
+    // Font loading timeout fallback
+    const fontTimeout = setTimeout(() => {
+      if (proxy.value < 1) {
+        tl.to(proxy, {
+          value: 1,
+          duration: 0.6,
+          ease: "power1.inOut",
+          onUpdate: () => setProgress(proxy.value),
+          onComplete: handleLoadComplete,
+        });
+      }
+    }, 4000);
+
+    // Wait for real font loading
+    document.fonts.ready.then(() => {
+      clearTimeout(fontTimeout);
+      // Phase 2: Fill to 100%
+      tl.to(proxy, {
+        value: 1,
+        duration: 0.8,
+        ease: "power1.inOut",
+        onUpdate: () => setProgress(proxy.value),
+        onComplete: handleLoadComplete,
+      });
+    });
+
+    function handleLoadComplete() {
+      stopCycling();
+
+      // Brief hold, then scale up
+      setTimeout(() => {
+        setPhase("scaling");
+
+        if (boxRef.current) {
+          gsap.to(boxRef.current, {
+            width: "100vw",
+            height: "100vh",
+            borderRadius: 0,
+            duration: 0.8,
+            ease: "power3.inOut",
+            onComplete: () => {
+              setPhase("exit");
+              // Short delay for fade-out to complete
+              setTimeout(() => setLoaded(true), 350);
+            },
+          });
+        }
+      }, 300);
+    }
+
+    return () => {
+      clearTimeout(fontTimeout);
+      tl.kill();
+    };
+  }, [setLoaded, stopCycling]);
 
   return (
     <AnimatePresence>
-      {!complete && (
+      {phase !== "exit" && (
         <motion.div
-          initial={{ opacity: 1 }}
-          exit={{ 
-            clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)",
-            transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
-          }}
-          className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-[#F7F3ED] font-archivo"
-          style={{ cursor: "wait" }}
+          key="preloader"
+          className="fixed inset-0 z-[1000] flex flex-col items-center justify-center"
+          style={{ backgroundColor: "var(--color-bg)" }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          {/* Progress Bar Top */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-black/5">
+          {/* Image cycling box */}
+          <div
+            ref={boxRef}
+            className="relative overflow-hidden"
+            style={{
+              width: 280,
+              height: 380,
+              borderRadius: 4,
+              backgroundColor: "#ffffff",
+            }}
+          >
+            {PROJECT_IMAGES.map((src, i) => (
+              <img
+                key={src + i}
+                src={src}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{
+                  opacity: i === currentImageIndex ? 1 : 0,
+                  transition:
+                    phase === "loading" ? "opacity 0.06s ease" : "none",
+                }}
+                // Preload all images immediately
+                loading="eager"
+              />
+            ))}
+          </div>
+
+          {/* Progress indicator — hidden during scaling */}
+          {phase === "loading" && (
             <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: (index + 1) / PHRASES.length }}
-              transition={{ duration: 0.7, ease: "easeInOut" }}
-              className="h-full bg-black origin-left"
-            />
-          </div>
-
-          {/* Cycling Text */}
-          <div className="relative h-[1.5em] overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={PHRASES[index]}
-                initial={{ y: "100%", clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }}
-                animate={{ y: "0%", clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
-                exit={{ y: "-100%", clipPath: "polygon(0 100%, 100% 100%, 100% 100%, 0 100%)" }}
-                transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-                className="block text-black font-medium leading-none"
-                style={{ fontSize: "21.33px" }}
+              className="flex flex-col items-center mt-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Thin accent progress line */}
+              <div
+                style={{
+                  width: 120,
+                  height: 1,
+                  backgroundColor: "var(--color-border)",
+                }}
               >
-                {PHRASES[index]}
-              </motion.span>
-            </AnimatePresence>
-          </div>
+                <div
+                  className="h-full origin-left"
+                  style={{
+                    backgroundColor: "var(--color-accent)",
+                    transform: `scaleX(${progress})`,
+                    transition: "transform 0.05s linear",
+                  }}
+                />
+              </div>
 
-          {/* Bottom Metadata */}
-          <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end font-mono text-[9px] uppercase tracking-[0.2em] text-black/40">
-            <div className="flex flex-col gap-1">
-              <span>Initializing Studio Module</span>
-              <span className="text-black/20">Phase: Loading.{index + 1}</span>
-            </div>
-            <div>
-              <span>HKJ/S24</span>
-            </div>
-          </div>
+              {/* Mono counter */}
+              <span
+                className="mt-3 font-mono tabular-nums select-none"
+                style={{
+                  fontSize: "var(--text-micro)",
+                  letterSpacing: "0.15em",
+                  color: "var(--color-text-ghost)",
+                }}
+              >
+                {String(Math.round(progress * 100)).padStart(3, "0")}
+              </span>
+            </motion.div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

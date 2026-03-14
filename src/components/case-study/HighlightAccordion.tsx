@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ProjectHighlight } from "@/constants/projects";
-import NothingEqLoader from "@/components/ui/NothingEqLoader";
+
 
 interface HighlightAccordionProps {
   highlights: ProjectHighlight[];
@@ -71,21 +71,18 @@ export default function HighlightAccordion({
                   {h.title}
                 </span>
 
-                {/* EQ indicator */}
-                <div
-                  className="flex justify-end"
+                {/* Open/close indicator */}
+                <span
+                  className="flex justify-end font-mono"
                   style={{
+                    fontSize: "var(--text-xs)",
+                    color: "var(--color-accent)",
                     opacity: isOpen ? 1 : 0,
                     transition: "opacity 0.3s",
                   }}
                 >
-                  <NothingEqLoader
-                    bars={3}
-                    segmentsPerBar={3}
-                    size={3}
-                    gap={1}
-                  />
-                </div>
+                  +
+                </span>
               </div>
             </button>
 

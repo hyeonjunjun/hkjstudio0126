@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import NothingEqLoader from "@/components/ui/NothingEqLoader";
+
 
 interface Chapter {
   id: string;
@@ -103,10 +103,6 @@ export default function ChapterSidebar({ chapters }: ChapterSidebarProps) {
         );
       })}
 
-      {/* EQ indicator at bottom */}
-      <div className="mt-4 opacity-30">
-        <NothingEqLoader bars={3} segmentsPerBar={3} size={3} gap={1} />
-      </div>
     </nav>
   );
 }

@@ -5,7 +5,7 @@
  *
  * Type: GT Alpina (display) + Söhne (body) + JetBrains Mono (metadata)
  * Palette: Warm off-white base, near-black text, burnished gold accent
- * Motion: GSAP-only, power3.out reveals, opacity from 0.15
+ * Motion: GSAP (ScrollTrigger) + Framer Motion (AnimatePresence, layoutId)
  */
 
 :root {
@@ -41,6 +41,16 @@
   --page-px: clamp(1.5rem, 5vw, 5rem);
   --section-py: clamp(8rem, 16vh, 14rem);
   --row-py: clamp(2.5rem, 5.5vh, 5rem);
+
+  /* ── vw Column Grid ── */
+  --grid-gutter: 0.56vw;  /* Desktop default */
+}
+
+@media (max-width: 1023px) {
+  :root { --grid-gutter: 1.04vw; }
+}
+@media (max-width: 767px) {
+  :root { --grid-gutter: 2.13vw; }
 }
 
 /* ── Base ── */
@@ -91,6 +101,50 @@ body {
     background-color: var(--color-border);
     width: 100%;
   }
+
+  /* ── Column grid spans ── */
+  .gutter-gap { gap: var(--grid-gutter); }
+  .padding-x-1 { padding-left: var(--grid-gutter); padding-right: var(--grid-gutter); }
+
+  /* Desktop-first span widths; tablet/mobile via media queries below */
+  .span-w-1 { width: 7.73vw; }
+  .span-w-2 { width: 16.02vw; }
+  .span-w-3 { width: 24.31vw; }
+  .span-w-4 { width: 32.59vw; }
+  .span-w-5 { width: 40.88vw; }
+  .span-w-7 { width: 57.45vw; }
+  .span-w-8 { width: 65.74vw; }
+  .span-w-12 { width: 98.89vw; }
+
+  .span-ml-1 { margin-left: 7.73vw; }
+  .span-ml-2 { margin-left: 16.57vw; }
+}
+
+/* ── Grid responsive overrides ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .span-w-1 { width: 7.20vw; }
+  .span-w-2 { width: 15.45vw; }
+  .span-w-3 { width: 23.70vw; }
+  .span-w-4 { width: 31.94vw; }
+  .span-w-5 { width: 40.19vw; }
+  .span-w-7 { width: 56.68vw; }
+  .span-w-8 { width: 64.93vw; }
+  .span-w-12 { width: 97.92vw; }
+  .span-ml-1 { margin-left: 7.20vw; }
+  .span-ml-2 { margin-left: 16.49vw; }
+}
+
+@media (max-width: 767px) {
+  .span-w-1 { width: 14.18vw; }
+  .span-w-2 { width: 30.49vw; }
+  .span-w-3 { width: 46.80vw; }
+  .span-w-4 { width: 63.11vw; }
+  .span-w-5 { width: 79.42vw; }
+  .span-w-7 { width: 95.73vw; }
+  .span-w-8 { width: 95.73vw; }
+  .span-w-12 { width: 95.73vw; }
+  .span-ml-1 { margin-left: 14.18vw; }
+  .span-ml-2 { margin-left: 32.62vw; }
 }
 
 /* Subtractive hover — dim siblings, keep hovered at full */

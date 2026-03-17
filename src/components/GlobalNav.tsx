@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useLenis } from "lenis/react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useStudioStore } from "@/lib/store";
@@ -24,6 +24,10 @@ export default function GlobalNav() {
   const symbolRef = useRef<HTMLButtonElement>(null);
   const lenis = useLenis();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Don't render on homepage — homepage has its own header
+  if (pathname === "/") return null;
 
   const handleNavClick = useCallback(
     (href: string) => {
@@ -39,52 +43,29 @@ export default function GlobalNav() {
     [lenis, router]
   );
 
-  // Show/hide based on scroll direction + hero threshold
   useEffect(() => {
     if (!navRef.current) return;
 
     const nav = navRef.current;
-    let pastHero = false;
 
-    gsap.set(nav, { y: -100, opacity: 0 });
+    // Start visible on non-homepage pages
+    gsap.set(nav, { y: 0, opacity: 1 });
 
-    const hero = document.getElementById("hero");
-    if (!hero) return;
-
-    // Track whether we've scrolled past the hero
-    const heroTrigger = ScrollTrigger.create({
-      trigger: hero,
-      start: "bottom top",
-      onEnter: () => {
-        pastHero = true;
-        gsap.to(nav, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" });
-      },
-      onLeaveBack: () => {
-        pastHero = false;
-        gsap.to(nav, { y: -100, opacity: 0, duration: 0.3, ease: "power2.in" });
-      },
-    });
-
-    // Direction-based show/hide — only active past the hero
+    // Direction-based show/hide
     const directionTrigger = ScrollTrigger.create({
       trigger: document.body,
       start: "top top",
       end: "bottom bottom",
       onUpdate: (self) => {
-        if (!pastHero) return;
-
         if (self.direction === 1) {
-          // Scrolling down → hide
           gsap.to(nav, { y: -100, opacity: 0, duration: 0.3, ease: "power2.in", overwrite: true });
         } else {
-          // Scrolling up → show
           gsap.to(nav, { y: 0, opacity: 1, duration: 0.3, ease: "power3.out", overwrite: true });
         }
       },
     });
 
     return () => {
-      heroTrigger.kill();
       directionTrigger.kill();
     };
   }, []);

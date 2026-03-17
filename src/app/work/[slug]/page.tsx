@@ -1,94 +1,146 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useRef, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { PROJECTS } from "@/constants/projects";
-import Colophon from "@/components/sections/Colophon";
+import { useScrollNavigate } from "@/hooks/useScrollNavigate";
 
-/* ─── Helpers ─── */
-
-function MediaBlock({
-  src,
-  placeholder,
-  aspect = "16/10",
-}: {
-  src: string;
-  placeholder?: string;
-  aspect?: string;
-}) {
-  if (src.startsWith("/placeholder")) {
-    return (
-      <div
-        className="w-full flex items-center justify-center"
-        style={{
-          aspectRatio: aspect,
-          backgroundColor: "var(--color-surface)",
-        }}
-      >
-        <span className="micro">{placeholder || "Media Pending"}</span>
-      </div>
-    );
-  }
-  return (
-    <div className="relative w-full overflow-hidden" style={{ aspectRatio: aspect }}>
-      <Image
-        src={src}
-        alt=""
-        fill
-        className="object-cover"
-        sizes="(max-width: 768px) 100vw, 60vw"
-        quality={90}
-      />
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════
-   ProjectDetail — Magazine-spread layout
-   ═══════════════════════════════════════════ */
-
-export default function ProjectDetail() {
+export default function CaseStudy() {
   const { slug } = useParams();
-  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollPercent, setScrollPercent] = useState(0);
 
   const project = PROJECTS.find((p) => p.id === slug);
-  const currentIndex = project ? PROJECTS.findIndex((p) => p.id === project.id) : -1;
-  const nextProject = PROJECTS[(currentIndex + 1) % PROJECTS.length];
-  const prevProject = PROJECTS[(currentIndex - 1 + PROJECTS.length) % PROJECTS.length];
+  const { progress, direction, nextProject, prevProject } =
+    useScrollNavigate({ currentSlug: slug as string });
 
-  // GSAP scroll reveals
+  // Scroll progress indicator
   useEffect(() => {
-    if (!containerRef.current) return;
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+      const pct = Math.round((scrollY / (scrollHeight - clientHeight)) * 100);
+      setScrollPercent(Math.max(0, Math.min(pct, 100)));
+    };
 
-    const reveals = containerRef.current.querySelectorAll("[data-reveal]");
-    reveals.forEach((el) => {
-      gsap.fromTo(
-        el,
-        { opacity: 0.15, y: 20 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 80%",
-          },
-        }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // GSAP scroll reveals for media (spec Section 7.4)
+  const hasAnimated = useRef(false);
+  useEffect(() => {
+    if (!containerRef.current || hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    // Image reveals: opacity + y
+    const imageEls = containerRef.current.querySelectorAll("[data-media-reveal='image']");
+    imageEls.forEach((el, i) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 75 },
+        { opacity: 1, y: 0, duration: 1.5, delay: i * 0.1, ease: "power3.out",
+          scrollTrigger: { trigger: el, start: "top 75%", once: true } }
       );
     });
-  }, [project]);
+
+    // Video reveals: opacity + y + scale (spec: scale 2→1)
+    const videoEls = containerRef.current.querySelectorAll("[data-media-reveal='video']");
+    videoEls.forEach((el, i) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 75, scale: 2 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.5, delay: i * 0.1, ease: "power3.out",
+          scrollTrigger: { trigger: el, start: "top 75%", once: true } }
+      );
+    });
+
+    // Text reveals (spec Section 7.5)
+    const textEls = containerRef.current.querySelectorAll("[data-text-reveal]");
+    textEls.forEach((el, i) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 5, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.75, delay: i * 0.122, ease: "power3.out" }
+      );
+    });
+
+    // Role text has different stagger (0.2s per spec)
+    const roleEls = containerRef.current.querySelectorAll("[data-role-reveal]");
+    roleEls.forEach((el, i) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 5, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.75, delay: i * 0.2, ease: "power3.out" }
+      );
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    };
+  }, [slug]);
+
+  // Keyboard navigation (spec Section 7.9)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        window.location.href = "/";
+        return;
+      }
+
+      // Arrow Up/Down: scroll to adjacent media block
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const blocks = Array.from(
+          document.querySelectorAll("[data-media-reveal]")
+        );
+        if (!blocks.length) return;
+
+        const viewportCenter = window.scrollY + window.innerHeight / 2;
+        // Find the block closest to viewport center
+        let closestIdx = 0;
+        let closestDist = Infinity;
+        blocks.forEach((el, idx) => {
+          const rect = (el as HTMLElement).getBoundingClientRect();
+          const elCenter = window.scrollY + rect.top + rect.height / 2;
+          const dist = Math.abs(elCenter - viewportCenter);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestIdx = idx;
+          }
+        });
+
+        const targetIdx =
+          e.key === "ArrowDown"
+            ? Math.min(closestIdx + 1, blocks.length - 1)
+            : Math.max(closestIdx - 1, 0);
+
+        blocks[targetIdx]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      // Spacebar: toggle video play/pause
+      if (e.key === " ") {
+        e.preventDefault();
+        const videos = document.querySelectorAll("video");
+        videos.forEach((v) => {
+          const rect = v.getBoundingClientRect();
+          if (rect.top < window.innerHeight && rect.bottom > 0) {
+            v.paused ? v.play() : v.pause();
+          }
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   if (!project) {
     return (
       <div
         className="w-full h-screen flex items-center justify-center font-mono uppercase"
         style={{
-          fontSize: "var(--text-micro)",
+          fontSize: "11px",
           letterSpacing: "0.2em",
           color: "var(--color-text-dim)",
         }}
@@ -98,404 +150,270 @@ export default function ProjectDetail() {
     );
   }
 
-  return (
-    <div ref={containerRef} className="min-h-screen" style={{ backgroundColor: "var(--color-bg)" }}>
-      {/* ══════════════════════════════════════
-          HERO — Full-bleed image
-          ══════════════════════════════════════ */}
-      <section className="relative w-full min-h-[85vh] flex flex-col justify-end">
-        <div className="absolute inset-0">
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-            style={{ filter: "brightness(0.65)" }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(to top, var(--color-bg) 0%, transparent 50%)",
-            }}
-          />
-        </div>
+  // Collect all media from the project
+  const mediaItems: Array<{
+    type: "image" | "video";
+    src: string;
+    poster?: string;
+    aspect?: string;
+  }> = [];
 
-        <div className="relative z-10 section-padding pb-20">
-          <span
-            className="font-mono uppercase block mb-6"
-            style={{
-              fontSize: "var(--text-micro)",
-              letterSpacing: "0.2em",
-              color: "var(--color-text-dim)",
-            }}
-          >
-            {project.sector} · {project.year}
-          </span>
+  // Editorial images
+  project.editorial.images?.forEach((img) => {
+    mediaItems.push({ type: "image", src: img });
+  });
+
+  // Process step images
+  project.processSteps?.forEach((step) => {
+    if (step.image) {
+      mediaItems.push({ type: "image", src: step.image, aspect: "4/3" });
+    }
+  });
+
+  // Videos
+  project.videos?.forEach((video) => {
+    mediaItems.push({
+      type: "video",
+      src: video.src,
+      poster: video.poster,
+      aspect: video.aspect,
+    });
+  });
+
+  return (
+    <div
+      ref={containerRef}
+      className="min-h-screen"
+      style={{ backgroundColor: "var(--color-bg)" }}
+    >
+      {/* ── Content column ── */}
+      <div
+        className="span-w-7 span-ml-2 py-[10vh]"
+      >
+        {/* ── Project Metadata ── */}
+        <div className="mb-16">
           <h1
-            className="font-display"
+            className="font-mono uppercase"
             style={{
-              fontSize: "clamp(2.4rem, 5vw, 4.5rem)",
+              fontSize: "11px",
+              letterSpacing: "0.08em",
               color: "var(--color-text)",
-              lineHeight: 1.05,
-              maxWidth: "14ch",
             }}
+            data-text-reveal
           >
             {project.title}
           </h1>
-          <div className="flex gap-8 mt-8">
-            <div>
-              <span className="micro block mb-1" style={{ color: "var(--color-text-ghost)" }}>Client</span>
+
+          <p
+            className="font-mono uppercase mt-4"
+            style={{
+              fontSize: "11px",
+              lineHeight: "110%",
+              color: "var(--color-text-dim)",
+            }}
+            data-text-reveal
+          >
+            {project.pitch}
+          </p>
+
+          <div className="flex gap-8 mt-6">
+            <div data-role-reveal>
               <span
-                className="font-mono"
-                style={{ fontSize: "var(--text-small)", color: "var(--color-text-dim)" }}
+                className="font-mono uppercase block"
+                style={{
+                  fontSize: "11px",
+                  color: "var(--color-text-ghost)",
+                  marginBottom: "4px",
+                }}
               >
-                {project.client}
+                Role
               </span>
-            </div>
-            <div>
-              <span className="micro block mb-1" style={{ color: "var(--color-text-ghost)" }}>Role</span>
               <span
-                className="font-mono"
-                style={{ fontSize: "var(--text-small)", color: "var(--color-text-dim)" }}
+                className="font-mono uppercase"
+                style={{
+                  fontSize: "11px",
+                  color: "var(--color-text-dim)",
+                }}
               >
                 {project.role}
               </span>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ══════════════════════════════════════
-          BACK BUTTON
-          ══════════════════════════════════════ */}
-      <div className="section-padding pt-8 pb-4">
-        <button
-          onClick={() => router.back()}
-          className="font-mono transition-colors duration-300 hover:text-[var(--color-accent)]"
-          style={{
-            fontSize: "var(--text-micro)",
-            color: "var(--color-text-dim)",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-          }}
-        >
-          ← Back
-        </button>
-      </div>
-
-      {/* ══════════════════════════════════════
-          PARADOX — Narrow column, offset right
-          ══════════════════════════════════════ */}
-      {project.paradox && (
-        <section
-          className="section-padding grid grid-cols-1 md:grid-cols-12 gap-8 pt-24 pb-20"
-          data-reveal
-        >
-          <div className="md:col-span-7 md:col-start-1">
-            <h2
-              className="font-display italic"
-              style={{
-                fontSize: "var(--text-h2)",
-                color: "var(--color-text)",
-                lineHeight: 1.3,
-              }}
-            >
-              {project.paradox}
-            </h2>
-          </div>
-          {project.stakes && (
-            <div className="md:col-span-4 md:col-start-9 flex items-end">
-              <p
-                className="font-sans"
+            <div data-role-reveal>
+              <span
+                className="font-mono uppercase block"
                 style={{
-                  fontSize: "var(--text-body)",
-                  color: "var(--color-text-dim)",
-                  lineHeight: 1.7,
+                  fontSize: "11px",
+                  color: "var(--color-text-ghost)",
+                  marginBottom: "4px",
                 }}
               >
-                {project.stakes}
-              </p>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ══════════════════════════════════════
-          EDITORIAL — Text left, image right
-          ══════════════════════════════════════ */}
-      <div className="hairline mx-[var(--page-padding)]" />
-
-      <section
-        className="section-padding grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 py-24"
-        data-reveal
-      >
-        <div className="md:col-span-5">
-          <span className="micro block mb-6" style={{ color: "var(--color-text-ghost)" }}>
-            Overview
-          </span>
-          <h2
-            className="font-display italic mb-6"
-            style={{
-              fontSize: "var(--text-h2)",
-              color: "var(--color-text)",
-              lineHeight: 1.2,
-            }}
-          >
-            {project.editorial.headline}
-          </h2>
-          <p
-            className="font-sans"
-            style={{
-              fontSize: "var(--text-body)",
-              color: "var(--color-text-dim)",
-              lineHeight: 1.7,
-            }}
-          >
-            {project.editorial.copy}
-          </p>
-        </div>
-
-        {project.editorial.images?.length > 0 && (
-          <div className="md:col-span-6 md:col-start-7">
-            <MediaBlock src={project.editorial.images[0]} placeholder="Editorial Media" />
-          </div>
-        )}
-      </section>
-
-      {/* ── Editorial image grid — full-bleed ── */}
-      {project.editorial.images?.length > 1 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 mb-4" data-reveal>
-          {project.editorial.images.slice(1).map((img, i) => (
-            <MediaBlock key={i} src={img} placeholder="Editorial Media" />
-          ))}
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════
-          PROCESS — Side-by-side steps
-          ══════════════════════════════════════ */}
-      <div className="hairline mx-[var(--page-padding)]" />
-
-      <section className="section-padding py-24" data-reveal>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
-          <div className="md:col-span-4">
-            <span className="micro block mb-6" style={{ color: "var(--color-text-ghost)" }}>
-              Process
-            </span>
-            <p
-              className="font-sans"
-              style={{
-                fontSize: "var(--text-body)",
-                color: "var(--color-text-dim)",
-                lineHeight: 1.7,
-              }}
-            >
-              {project.process.copy}
-            </p>
-          </div>
-
-          {project.processSteps && project.processSteps.length > 0 && (
-            <div className="md:col-span-7 md:col-start-6 grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {project.processSteps.map((step, i) => (
-                <div key={i} data-reveal>
-                  <span
-                    className="font-mono block mb-3"
-                    style={{
-                      fontSize: "var(--text-micro)",
-                      color: "var(--color-accent)",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h4
-                    className="font-sans mb-2"
-                    style={{ fontSize: "var(--text-small)", color: "var(--color-text)" }}
-                  >
-                    {step.title}
-                  </h4>
-                  <p
-                    className="font-sans"
-                    style={{
-                      fontSize: "var(--text-body)",
-                      color: "var(--color-text-dim)",
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    {step.copy}
-                  </p>
-                  {step.image && (
-                    <div className="mt-4">
-                      <MediaBlock src={step.image} aspect="4/3" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════
-          ENGINEERING — Narrow text + signal tags
-          ══════════════════════════════════════ */}
-      <div className="hairline mx-[var(--page-padding)]" />
-
-      <section className="section-padding py-24" data-reveal>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
-          <div className="md:col-span-5">
-            <span className="micro block mb-6" style={{ color: "var(--color-text-ghost)" }}>
-              Engineering
-            </span>
-            <p
-              className="font-sans"
-              style={{
-                fontSize: "var(--text-body)",
-                color: "var(--color-text-dim)",
-                lineHeight: 1.7,
-              }}
-            >
-              {project.engineering.copy}
-            </p>
-          </div>
-          <div className="md:col-span-6 md:col-start-7 flex flex-wrap gap-2 content-start">
-            {project.engineering.signals?.map((signal) => (
+                Year
+              </span>
               <span
-                key={signal}
                 className="font-mono uppercase"
                 style={{
-                  fontSize: "var(--text-micro)",
-                  letterSpacing: "0.12em",
+                  fontSize: "11px",
                   color: "var(--color-text-dim)",
-                  padding: "6px 14px",
-                  border: "1px solid var(--color-border)",
                 }}
               >
-                {signal}
+                {project.year}
               </span>
-            ))}
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* ══════════════════════════════════════
-          STATS — Full-width bar
-          ══════════════════════════════════════ */}
-      {project.statistics?.length > 0 && (
-        <section
-          className="py-16 section-padding"
-          style={{
-            backgroundColor: "var(--color-surface)",
-            borderTop: "1px solid var(--color-border)",
-            borderBottom: "1px solid var(--color-border)",
-          }}
-          data-reveal
-        >
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-            {project.statistics.map((stat) => (
-              <div key={stat.label}>
-                <span className="micro block mb-2">{stat.label}</span>
-                <span
-                  className="font-display"
+        {/* ── Media Gallery ── */}
+        <div className="flex flex-col gap-8">
+          {mediaItems.map((item, i) => (
+            <div key={i} data-media-reveal={item.type}>
+              {item.type === "image" ? (
+                <div
+                  className="relative w-full overflow-hidden"
                   style={{
-                    fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
-                    color: "var(--color-text)",
-                    lineHeight: 1,
+                    aspectRatio: item.aspect || "16/10",
                   }}
                 >
-                  {stat.value}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+                  {item.src.startsWith("/placeholder") ? (
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{
+                        backgroundColor: "var(--color-surface)",
+                      }}
+                    >
+                      <span
+                        className="font-mono uppercase"
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--color-text-ghost)",
+                        }}
+                      >
+                        Media Pending
+                      </span>
+                    </div>
+                  ) : (
+                    <Image
+                      src={item.src}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 95vw, 57vw"
+                      quality={90}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div
+                  className="relative w-full overflow-hidden"
+                  style={{ aspectRatio: item.aspect || "16/9" }}
+                >
+                  <video
+                    src={item.src}
+                    poster={item.poster}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* ══════════════════════════════════════
-          SCHEMATIC — Technical specs bar
-          ══════════════════════════════════════ */}
+      {/* ── Scroll progress ── */}
       <div
-        className="section-padding grid grid-cols-2 sm:grid-cols-4 gap-6 py-10"
+        className="fixed bottom-0 right-0 padding-x-1"
         style={{
-          backgroundColor: "var(--color-surface)",
-          borderTop: "1px solid var(--color-border)",
+          paddingBottom: "clamp(1rem, 2vh, 1.5rem)",
         }}
-        data-reveal
       >
-        <div className="flex flex-col gap-1">
-          <span className="micro">Typography</span>
-          <span className="font-mono" style={{ fontSize: "var(--text-micro)", color: "var(--color-text)" }}>
-            {project.schematic.typography}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="micro">Grid</span>
-          <span className="font-mono" style={{ fontSize: "var(--text-micro)", color: "var(--color-text)" }}>
-            {project.schematic.grid}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="micro">Stack</span>
-          <span className="font-mono" style={{ fontSize: "var(--text-micro)", color: "var(--color-text)" }}>
-            {project.schematic.stack.join(", ")}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="micro">Palette</span>
-          <div className="flex gap-1 mt-1">
-            {project.schematic.colors?.map((c) => (
+        <span
+          className="font-mono"
+          style={{
+            fontSize: "11px",
+            color: "var(--color-text-ghost)",
+          }}
+        >
+          {scrollPercent} %
+        </span>
+      </div>
+
+      {/* ── Scroll-to-navigate progress bar ── */}
+      {progress > 0 && direction && (
+        <div
+          className="fixed left-0 right-0 flex items-center justify-center"
+          style={{
+            [direction === "next" ? "bottom" : "top"]: "2rem",
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              style={{
+                width: 120,
+                height: 2,
+                backgroundColor: "var(--color-border)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
               <div
-                key={c}
                 style={{
-                  width: 14,
-                  height: 14,
-                  backgroundColor: c,
-                  border: "1px solid var(--color-border)",
+                  width: `${progress}%`,
+                  height: "100%",
+                  backgroundColor: "var(--color-text-dim)",
+                  transition: "width 100ms linear",
                 }}
               />
-            ))}
+            </div>
+            <span
+              className="font-mono uppercase"
+              style={{
+                fontSize: "11px",
+                color: "var(--color-text-ghost)",
+              }}
+            >
+              {direction === "next"
+                ? nextProject?.title
+                : prevProject?.title}
+            </span>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* ══════════════════════════════════════
-          PREV / NEXT NAV
-          ══════════════════════════════════════ */}
+      {/* ── Mobile nav buttons (< 768px) ── */}
       <div
-        className="grid grid-cols-2"
-        style={{ borderTop: "1px solid var(--color-border)" }}
+        className="md:hidden padding-x-1 pb-8 flex justify-between"
       >
-        <Link
-          href={`/work/${prevProject.id}`}
-          className="block px-6 sm:px-12 py-16 transition-colors duration-500 hover:bg-[var(--color-surface)]"
-          style={{ borderRight: "1px solid var(--color-border)" }}
-        >
-          <span className="micro block mb-3">← Previous</span>
-          <h3
-            className="font-display"
-            style={{ fontSize: "var(--text-h3)", color: "var(--color-text)", lineHeight: 1.3 }}
+        {prevProject && (
+          <a
+            href={`/work/${prevProject.id}`}
+            className="font-mono uppercase"
+            style={{
+              fontSize: "11px",
+              color: "var(--color-text-dim)",
+              letterSpacing: "0.08em",
+            }}
           >
-            {prevProject.title}
-          </h3>
-        </Link>
-        <Link
-          href={`/work/${nextProject.id}`}
-          className="block px-6 sm:px-12 py-16 text-right transition-colors duration-500 hover:bg-[var(--color-surface)]"
-        >
-          <span className="micro block mb-3">Next →</span>
-          <h3
-            className="font-display"
-            style={{ fontSize: "var(--text-h3)", color: "var(--color-text)", lineHeight: 1.3 }}
+            ← {prevProject.title}
+          </a>
+        )}
+        {nextProject && (
+          <a
+            href={`/work/${nextProject.id}`}
+            className="font-mono uppercase ml-auto"
+            style={{
+              fontSize: "11px",
+              color: "var(--color-text-dim)",
+              letterSpacing: "0.08em",
+            }}
           >
-            {nextProject.title}
-          </h3>
-        </Link>
+            {nextProject.title} →
+          </a>
+        )}
       </div>
-
-      {/* ── Footer ── */}
-      <Colophon />
     </div>
   );
 }

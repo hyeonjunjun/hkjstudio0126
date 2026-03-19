@@ -3,52 +3,33 @@
 import { useRef, useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import TransitionLink from "@/components/TransitionLink";
-import ProjectCover from "@/components/ProjectCover";
 import { PROJECTS } from "@/constants/projects";
-import { CONTACT_EMAIL, SOCIALS } from "@/constants/contact";
-
-/*
- * Grid — curated placement.
- *
- * Row 1: featured work (descending scale, left to right)
- * Row 2: catalogue (uniform, supporting)
- */
-const LAYOUT = [
-  { id: "gyeol",     span: 5, index: 1 },
-  { id: "sift",      span: 4, index: 2 },
-  { id: "conductor", span: 3, index: 7 },
-  { id: "hana",      span: 3, index: 3 },
-  { id: "pour",      span: 3, index: 4 },
-  { id: "moji",      span: 3, index: 5 },
-  { id: "atlas",     span: 3, index: 6 },
-] as const;
-
-const projectMap = Object.fromEntries(PROJECTS.map((p) => [p.id, p]));
+import { CONTACT_EMAIL } from "@/constants/contact";
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  /* Entrance: covers first, identity + footer follow */
+  const yearMin = Math.min(...PROJECTS.map((p) => parseInt(p.year)));
+  const yearMax = Math.max(...PROJECTS.map((p) => parseInt(p.year)));
+
+  /* ── Entrance ── */
   useEffect(() => {
     if (!sectionRef.current) return;
 
-    const covers = sectionRef.current.querySelectorAll("[data-image]");
-    const identity = sectionRef.current.querySelector("[data-identity]");
+    const rows = sectionRef.current.querySelectorAll("[data-row]");
     const footer = sectionRef.current.querySelector("[data-footer]");
 
-    const tl = gsap.timeline();
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
     tl.fromTo(
-      covers,
-      { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.8, stagger: 0.06, ease: "power3.out" },
+      rows,
+      { opacity: 0, y: 6 },
+      { opacity: 1, y: 0, duration: 0.6, stagger: 0.04 },
+      0.3,
     );
-    tl.fromTo(
-      [identity, footer],
-      { opacity: 0 },
-      { opacity: 1, duration: 0.5, ease: "power2.out" },
-      "-=0.4",
-    );
+    if (footer) {
+      tl.fromTo(footer, { opacity: 0 }, { opacity: 1, duration: 0.4 }, "-=0.2");
+    }
   }, []);
 
   return (
@@ -57,95 +38,144 @@ export default function Hero() {
       style={{
         height: "100svh",
         overflow: "hidden",
-        backgroundColor: "var(--color-bg)",
+        position: "relative",
         display: "flex",
         flexDirection: "column",
-        padding:
-          "clamp(3.8rem, 7vh, 5.5rem) var(--page-px) clamp(0.8rem, 1.5vh, 1.2rem)",
+        justifyContent: "center",
+        padding: "0 var(--page-px)",
       }}
     >
-      {/* ── Identity ── */}
-      <div
-        data-identity
-        style={{ marginBottom: "clamp(1.5rem, 3vh, 2.5rem)" }}
-      >
-        <h1
-          className="font-display"
-          style={{
-            fontSize: "clamp(1.4rem, 2.2vw, 2rem)",
-            fontWeight: 400,
-            letterSpacing: "-0.02em",
-            lineHeight: 1.2,
-            color: "var(--color-text)",
-          }}
-        >
-          Hyeonjoon Jun
-        </h1>
-        <p
-          className="font-sans"
-          style={{
-            fontSize: "var(--text-body)",
-            color: "var(--color-text-secondary)",
-            marginTop: "0.25em",
-            lineHeight: 1.5,
-          }}
-        >
-          Design engineer building interfaces that feel considered.
-        </p>
-      </div>
-
-      {/* ── Grid ── */}
-      <div
-        className="tableau-grid"
-        style={{ flex: 1, minHeight: 0 }}
-      >
-        {LAYOUT.map((item) => {
-          const project = projectMap[item.id];
-          if (!project) return null;
-
+      {/* ── Project Index ── */}
+      <nav style={{ width: "100%" }}>
+        {PROJECTS.map((project, i) => {
           const isWip = !!project.wip;
+          const isActive = activeId === project.id;
 
           return (
             <div
-              key={item.id}
-              className="tableau-cell"
+              key={project.id}
+              data-row
+              onMouseEnter={() => setActiveId(project.id)}
+              onMouseLeave={() => setActiveId(null)}
               style={{
-                gridColumn: `span ${item.span}`,
-                opacity: isWip ? 0.18 : 1,
-                filter: isWip ? "grayscale(0.4)" : undefined,
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                padding: "clamp(0.6rem, 1.1vh, 0.85rem) 0",
+                borderBottom: "1px solid var(--color-border)",
+                cursor: isWip ? "default" : "pointer",
+                transition: "opacity 0.35s cubic-bezier(0.23, 1, 0.32, 1)",
+                opacity: activeId && !isActive ? 0.12 : 1,
               }}
-              onMouseEnter={() => setHoveredId(item.id)}
-              onMouseLeave={() => setHoveredId(null)}
             >
-              <TransitionLink
-                href={isWip ? "#" : `/work/${project.id}`}
-                className="block"
+              {/* Left: number + title */}
+              <div
                 style={{
-                  flex: 1,
-                  minHeight: 0,
-                  cursor: isWip ? "default" : "pointer",
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "clamp(0.5rem, 0.8vw, 0.8rem)",
                 }}
               >
-                <ProjectCover
-                  project={project}
-                  index={item.index}
-                  isHovered={hoveredId === item.id}
-                  isWip={isWip}
-                />
-              </TransitionLink>
+                <span
+                  className="font-mono"
+                  style={{
+                    fontSize: "9px",
+                    letterSpacing: "0.06em",
+                    color: isActive
+                      ? "var(--color-accent)"
+                      : "var(--color-text-ghost)",
+                    transition: "color 0.25s ease",
+                    minWidth: "1.8ch",
+                  }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+
+                {isWip ? (
+                  <span
+                    className="font-sans"
+                    style={{
+                      fontSize: "var(--text-body)",
+                      fontWeight: 300,
+                      letterSpacing: "-0.01em",
+                      color: "var(--color-text-ghost)",
+                    }}
+                  >
+                    {project.title}
+                  </span>
+                ) : (
+                  <TransitionLink
+                    href={`/work/${project.id}`}
+                    className="font-sans"
+                    style={{
+                      fontSize: "var(--text-body)",
+                      fontWeight: isActive ? 400 : 300,
+                      letterSpacing: "-0.01em",
+                      color: isActive
+                        ? "var(--color-text)"
+                        : "var(--color-text-secondary)",
+                      transition:
+                        "color 0.25s ease, font-weight 0.25s ease",
+                      textDecoration: "none",
+                    }}
+                  >
+                    {project.title}
+                  </TransitionLink>
+                )}
+              </div>
+
+              {/* Right: sector + year */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "clamp(1.5rem, 3vw, 3rem)",
+                }}
+              >
+                <span
+                  className="font-mono uppercase"
+                  style={{
+                    fontSize: "8px",
+                    letterSpacing: "0.1em",
+                    color: "var(--color-text-ghost)",
+                    whiteSpace: "nowrap",
+                    display: "none",
+                  }}
+                  // Hidden on mobile via inline style; shown via media query below
+                  data-sector
+                >
+                  {project.sector}
+                </span>
+                <span
+                  className="font-mono uppercase"
+                  style={{
+                    fontSize: "8px",
+                    letterSpacing: "0.1em",
+                    color: isWip
+                      ? "var(--color-text-ghost)"
+                      : "var(--color-text-ghost)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {isWip ? "WIP" : project.year}
+                </span>
+              </div>
             </div>
           );
         })}
-      </div>
+      </nav>
 
       {/* ── Footer ── */}
       <footer
         data-footer
         style={{
+          position: "absolute",
+          bottom: "clamp(1.5rem, 3vh, 2.5rem)",
+          left: "var(--page-px)",
+          right: "var(--page-px)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingTop: "clamp(0.4rem, 0.8vh, 0.6rem)",
         }}
       >
         <span
@@ -156,39 +186,36 @@ export default function Hero() {
             color: "var(--color-text-ghost)",
           }}
         >
-          {PROJECTS.length} Works · {Math.min(...PROJECTS.map(p => parseInt(p.year)))}–{Math.max(...PROJECTS.map(p => parseInt(p.year)))}
+          {yearMin}–{yearMax}
         </span>
 
-        <div className="flex items-center gap-4">
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="font-mono uppercase transition-colors duration-300 hover:text-[var(--color-text)]"
-            style={{
-              fontSize: "9px",
-              letterSpacing: "0.1em",
-              color: "var(--color-text-ghost)",
-            }}
-          >
-            {CONTACT_EMAIL}
-          </a>
-          {SOCIALS.map((s) => (
-            <a
-              key={s.label}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono uppercase transition-colors duration-300 hover:text-[var(--color-text)] hidden sm:inline"
-              style={{
-                fontSize: "9px",
-                letterSpacing: "0.1em",
-                color: "var(--color-text-ghost)",
-              }}
-            >
-              {s.label}
-            </a>
-          ))}
-        </div>
+        <a
+          href={`mailto:${CONTACT_EMAIL}`}
+          className="font-mono uppercase"
+          style={{
+            fontSize: "8px",
+            letterSpacing: "0.1em",
+            color: "var(--color-text-ghost)",
+            textDecoration: "none",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.color = "var(--color-text-dim)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.color = "var(--color-text-ghost)")
+          }
+        >
+          {CONTACT_EMAIL}
+        </a>
       </footer>
+
+      {/* Show sector on desktop */}
+      <style>{`
+        @media (min-width: 768px) {
+          [data-sector] { display: inline !important; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -5,8 +5,8 @@ import { useStudioStore } from "@/lib/store";
 import type { TimePeriod } from "@/lib/time";
 
 const SIZE = 20;
-const SCALE = 2.5;
-const PX = SIZE * SCALE; // 50
+const SCALE = 1.4;
+const PX = SIZE * SCALE; // 28
 const T = ""; // transparent
 
 /* ─── Animated pixel definition ─── */
@@ -421,22 +421,6 @@ export default function PixelArt({ onCycleTime }: PixelArtProps) {
           }}
         />
       </button>
-      {/* Tooltip */}
-      <span
-        className="font-mono uppercase"
-        style={{
-          fontSize: "7px",
-          letterSpacing: "0.1em",
-          color: "var(--color-text-ghost)",
-          marginTop: "3px",
-          opacity: hovered ? 1 : 0,
-          transition: "opacity 0.2s ease",
-          pointerEvents: "none",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {effectivePeriod}
-      </span>
     </div>
   );
 }

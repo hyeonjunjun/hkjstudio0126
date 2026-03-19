@@ -21,7 +21,7 @@ Cathydolle's exact design system is adopted: vw-based column grid, 11px uppercas
 - GSAP (ScrollTrigger, timeline) + Framer Motion (AnimatePresence, layoutId, animate)
 - Lenis smooth scroll
 - Zustand (minimal state)
-
+  
 **Note:** MEMORY.md claims "Framer Motion fully removed" — this is outdated. Framer Motion v12.36.0 is installed and actively used. MEMORY.md will be corrected.
 
 ## Color & Typography (Unchanged)

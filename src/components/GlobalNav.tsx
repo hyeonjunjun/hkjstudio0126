@@ -75,8 +75,6 @@ export default function GlobalNav() {
     );
   }, []);
 
-  // On homepage, render a minimal transparent nav (no bg, no backdrop)
-  // On inner pages, render the standard sticky nav with blur bg
   return (
     <>
       <nav
@@ -89,19 +87,19 @@ export default function GlobalNav() {
           WebkitBackdropFilter: isHome ? "none" : "blur(8px)",
         }}
       >
-        {/* Pixel art (click cycles time) + studio mark (navigates home) */}
+        {/* Studio mark + pixel art (pixel art hidden on homepage) */}
         <div className="flex items-center gap-2" data-nav-el>
-          <PixelArt />
+          {!isHome && <PixelArt />}
           <TransitionLink href="/">
             <span
-              className="font-display"
+              className="font-mono uppercase"
               style={{
-                fontSize: "clamp(11px, 1vw, 13px)",
+                fontSize: "9px",
+                letterSpacing: "0.12em",
                 color: "var(--color-text-dim)",
-                letterSpacing: "0.05em",
               }}
             >
-              HKJ
+              HKJ Studio
             </span>
           </TransitionLink>
         </div>

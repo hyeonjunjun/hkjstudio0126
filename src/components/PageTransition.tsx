@@ -1,63 +1,70 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStudioStore } from "@/lib/store";
 
-/**
- * Full-screen overlay that fades to --color-bg between page navigations.
- * Sequence: fade in → navigate → fade out.
- */
 export default function PageTransition() {
-  const overlayRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const isTransitioning = useStudioStore((s) => s.isTransitioning);
-  const pendingRoute = useStudioStore((s) => s.pendingRoute);
-  const endTransition = useStudioStore((s) => s.endTransition);
-  const phaseRef = useRef<"idle" | "entering" | "navigated">("idle");
+  const { isTransitioning, pendingRoute, endTransition } = useStudioStore();
+  const [phase, setPhase] = useState<"idle" | "entering" | "exiting">("idle");
+  const prevPathname = useRef(pathname);
 
-  // Phase 1: Fade overlay in, then navigate
+  // Check reduced motion preference (SSR-safe)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   useEffect(() => {
-    if (!isTransitioning || !pendingRoute || !overlayRef.current) return;
+    setPrefersReducedMotion(
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }, []);
 
-    phaseRef.current = "entering";
-    overlayRef.current.style.opacity = "1";
-
-    const timer = setTimeout(() => {
-      phaseRef.current = "navigated";
-      router.push(pendingRoute);
-    }, 450);
-
-    return () => clearTimeout(timer);
-  }, [isTransitioning, pendingRoute, router]);
-
-  // Phase 2: After pathname changes, fade overlay out
+  // Phase 1: Overlay enters
   useEffect(() => {
-    if (phaseRef.current !== "navigated" || !overlayRef.current) return;
+    if (isTransitioning && pendingRoute) {
+      if (prefersReducedMotion) {
+        router.push(pendingRoute);
+        return;
+      }
+      setPhase("entering");
+      const timer = setTimeout(() => {
+        router.push(pendingRoute);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [isTransitioning, pendingRoute, router, prefersReducedMotion]);
 
-    phaseRef.current = "idle";
+  // Phase 2: Route changed, overlay exits
+  useEffect(() => {
+    if (pathname !== prevPathname.current) {
+      prevPathname.current = pathname;
+      if (isTransitioning) {
+        if (prefersReducedMotion) {
+          endTransition();
+          return;
+        }
+        setPhase("exiting");
+        const timer = setTimeout(() => {
+          setPhase("idle");
+          endTransition();
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [pathname, isTransitioning, endTransition, prefersReducedMotion]);
 
-    // Brief delay to let new page render
-    const timer = setTimeout(() => {
-      if (overlayRef.current) overlayRef.current.style.opacity = "0";
-      setTimeout(() => endTransition(), 450);
-    }, 120);
-
-    return () => clearTimeout(timer);
-  }, [pathname, endTransition]);
+  if (phase === "idle" && !isTransitioning) return null;
 
   return (
     <div
-      ref={overlayRef}
       style={{
         position: "fixed",
         inset: 0,
+        zIndex: 9000,
         backgroundColor: "var(--color-bg)",
-        opacity: 0,
+        opacity: phase === "entering" ? 1 : phase === "exiting" ? 0 : 0,
+        transition: `opacity 600ms cubic-bezier(0.86, 0, 0.07, 1)`,
         pointerEvents: isTransitioning ? "all" : "none",
-        zIndex: 9999,
-        transition: "opacity 0.45s cubic-bezier(0.86, 0, 0.07, 1)",
       }}
     />
   );

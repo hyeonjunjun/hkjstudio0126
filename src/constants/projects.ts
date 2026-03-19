@@ -84,6 +84,8 @@ export interface Project {
         bg: string;
         text: string;
     };
+    /** Card format in slider mode */
+    cardFormat?: "portrait" | "landscape";
 }
 
 export const PROJECTS: Project[] = [
@@ -171,6 +173,7 @@ export const PROJECTS: Project[] = [
             { src: "/assets/gyeol-broll4.mp4", poster: "/images/gyeol-spring.png", caption: "woven linen displacement", aspect: "16/9" },
         ],
         cover: { bg: "#2a241c", text: "rgba(255,252,245,0.85)" },
+        cardFormat: "portrait",
     },
     {
         id: "conductor",
@@ -227,6 +230,7 @@ export const PROJECTS: Project[] = [
         gutPunch: "The best tools disappear into the work. Conductor is invisible until you need it.",
         wip: true,
         cover: { bg: "#3d3830", text: "rgba(255,252,245,0.8)" },
+        cardFormat: "landscape",
     },
     {
         id: "sift",
@@ -295,6 +299,7 @@ export const PROJECTS: Project[] = [
             { title: "Quiet Luxury UI", copy: "We rejected tech-cold blues and aggressive gamification. Instead, warm earth tones paired with classical serif typefaces create a digital literary journal.", image: "/images/sift-v2.jpg" },
         ],
         cover: { bg: "#443732", text: "rgba(255,252,245,0.9)" },
+        cardFormat: "landscape",
     },
     {
         id: "moji",
@@ -317,6 +322,7 @@ export const PROJECTS: Project[] = [
         schematic: { stack: ["React", "Radix", "Tailwind", "Storybook"], grid: "8pt", typography: "Söhne / GT Alpina", colors: ["#5A6B7A", "#F5F2ED", "#1A1917"] },
         paradox: "Can a design system have personality without sacrificing consistency?",
         cover: { bg: "#5A6B7A", text: "rgba(255,252,245,0.85)" },
+        cardFormat: "portrait",
     },
     {
         id: "hana",
@@ -338,6 +344,7 @@ export const PROJECTS: Project[] = [
         contributors: [{ name: "Ryan Jun", role: "Design & Engineering" }],
         schematic: { stack: ["Next.js", "Sanity", "Tailwind"], grid: "12-col", typography: "Noto Serif KR / Söhne", colors: ["#C4917A", "#FAF8F5", "#2A2420"] },
         cover: { bg: "#C4917A", text: "rgba(255,252,245,0.85)" },
+        cardFormat: "landscape",
     },
     {
         id: "pour",
@@ -359,6 +366,7 @@ export const PROJECTS: Project[] = [
         contributors: [{ name: "Ryan Jun", role: "Design & Engineering" }],
         schematic: { stack: ["React Native", "BLE", "SQLite"], grid: "Organic", typography: "Inter / Playfair", colors: ["#6B5840", "#F5F0E8", "#3A3020"] },
         cover: { bg: "#6B5840", text: "rgba(255,252,245,0.85)" },
+        cardFormat: "portrait",
     },
     {
         id: "atlas",
@@ -380,5 +388,6 @@ export const PROJECTS: Project[] = [
         contributors: [{ name: "Ryan Jun", role: "Frontend Engineering" }],
         schematic: { stack: ["React", "Mapbox GL", "Deck.gl", "D3"], grid: "Dashboard", typography: "Inter Tight", colors: ["#4A6B5A", "#1A2420", "#E8F0EC"] },
         cover: { bg: "#4A6B5A", text: "rgba(255,252,245,0.85)" },
+        cardFormat: "landscape",
     },
 ];

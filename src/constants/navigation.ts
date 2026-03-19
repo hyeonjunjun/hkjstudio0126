@@ -4,13 +4,11 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { label: "Work", href: "/works" },
-  { label: "Coddiwompling", href: "/coddiwomple" },
   { label: "About", href: "/about" },
+  { label: "Coddiwomple", href: "/coddiwomple" },
 ];
 
 export const MENU_LINKS: NavLink[] = [
-  { label: "Work", href: "/works" },
-  { label: "Coddiwompling", href: "/coddiwomple" },
   { label: "About", href: "/about" },
+  { label: "Coddiwomple", href: "/coddiwomple" },
 ];

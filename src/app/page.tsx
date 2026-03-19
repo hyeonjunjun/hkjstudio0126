@@ -4,6 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { useStudioStore } from "@/lib/store";
 import HomepageChrome from "@/components/homepage/HomepageChrome";
 import HomepageList from "@/components/homepage/HomepageList";
+import HomepageSlider from "@/components/homepage/HomepageSlider";
 
 export default function Home() {
   const viewMode = useStudioStore((s) => s.viewMode);
@@ -13,7 +14,7 @@ export default function Home() {
       <HomepageChrome />
       <AnimatePresence mode="wait">
         {viewMode === "list" && <HomepageList key="list" />}
-        {/* Slider mode added in next chunk */}
+        {viewMode === "slider" && <HomepageSlider key="slider" />}
       </AnimatePresence>
     </main>
   );

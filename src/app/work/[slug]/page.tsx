@@ -97,7 +97,7 @@ export default function CaseStudy() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        navigate("/works");
+        navigate("/");
         return;
       }
 

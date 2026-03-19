@@ -20,8 +20,8 @@ export default async function Image() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#F5F2ED",
-          color: "#1A1917",
+          backgroundColor: "#0C0D10",
+          color: "#D4D0CA",
         }}
       >
         <div
@@ -48,7 +48,7 @@ export default async function Image() {
               fontFamily: "monospace",
               letterSpacing: "0.15em",
               textTransform: "uppercase",
-              color: "#7A756D",
+              color: "#555250",
             }}
           >
             Design Engineering — Ryan Jun

@@ -15,9 +15,9 @@ export default function CoddiwomplePage() {
     const items = gridRef.current.querySelectorAll("[data-explore-item]");
     gsap.fromTo(
       items,
-      { opacity: 0, y: 40 },
+      { autoAlpha: 0, y: 40 },
       {
-        opacity: 1,
+        autoAlpha: 1,
         y: 0,
         duration: 0.9,
         ease: "power3.out",
@@ -86,7 +86,7 @@ export default function CoddiwomplePage() {
               data-explore-item
               style={{
                 gridColumn: colStart ? `${colStart} / span 5` : colSpan,
-                opacity: 0,
+                visibility: "hidden",
                 display: "block",
               }}
             >
